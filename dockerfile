@@ -76,7 +76,7 @@ RUN conda install -n habitat pytorch torchvision cudatoolkit=10.1 -c pytorch
 RUN conda install -n habitat tensorflow 
 RUN conda install -n habitat tensorflow-gpu 
 
+ADD . /home/
 
 
-
-WORKDIR /jupyter_folder
+WORKDIR /home
