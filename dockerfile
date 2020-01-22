@@ -20,6 +20,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     unzip &&\
     rm -rf /var/lib/apt/lists/*
 
+
+
 # Install conda
 RUN curl -o ~/miniconda.sh -O  https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh  &&\
     chmod +x ~/miniconda.sh &&\
@@ -35,6 +37,9 @@ RUN mkdir /opt/cmake
 RUN sh /cmake-3.13.4-Linux-x86_64.sh --prefix=/opt/cmake --skip-license
 RUN ln -s /opt/cmake/bin/cmake /usr/local/bin/cmake
 RUN cmake --version
+
+
+RUN apt-get update && apt-get install -y cmake libopenmpi-dev zlib1g-dev
 
 # Conda environment
 RUN conda create -n habitat python=3.6 cmake=3.14.0
@@ -61,6 +66,7 @@ RUN /bin/bash -c ". activate habitat; pip install opencv-python"
 RUN /bin/bash -c ". activate habitat; pip install imageio"
 RUN /bin/bash -c ". activate habitat; pip install scikit-image"
 RUN /bin/bash -c ". activate habitat; pip install scikit-fmm"
+RUN /bin/bash -c ". activate habitat; pip install stable-baselines[mpi]"
 
 RUN apt-get update && \
     apt-get install --assume-yes -y git ssh-client
