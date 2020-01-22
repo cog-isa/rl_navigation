@@ -1,0 +1,493 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="7a13aba1-30d0-4115-88cb-013a670600d6" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/my_rl_proj.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.ipynb_checkpoints/LocalPolicyPPO_train-checkpoint.ipynb" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.ipynb_checkpoints/agent test-checkpoint.ipynb" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.ipynb_checkpoints/block_agent_test-checkpoint.ipynb" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/LP_PPO_model.zip" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/LocalPolicyPPO_train.ipynb" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/LocalPolicyPPO_train.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/agent test.ipynb" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/agents/PPO.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/agents/agents.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/agents/local_policy.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/agents/local_policy_without_GRU.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/agents/map_and_plan_agent/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/agents/map_and_plan_agent/depth_utils.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/agents/map_and_plan_agent/fmm_planner.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/agents/map_and_plan_agent/make_vis.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/agents/map_and_plan_agent/rotation_utils.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/agents/map_and_plan_agent/slam.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/agents/map_and_plan_agent2/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/agents/map_and_plan_agent2/depth_utils.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/agents/map_and_plan_agent2/fmm_planner.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/agents/map_and_plan_agent2/make_vis.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/agents/map_and_plan_agent2/rotation_utils.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/agents/map_and_plan_agent2/slam.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/agents/map_plan_baseline_untouched" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/agents/slam_local_policy/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/agents/slam_local_policy/depth_utils.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/agents/slam_local_policy/fmm_planner.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/agents/slam_local_policy/make_vis.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/agents/slam_local_policy/rotation_utils.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/agents/slam_local_policy/slam.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/block_agent_test.ipynb" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/common/astar.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/common/default_blocks.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/common/env_utils.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/configs/README.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/configs/baselines/ppo.yaml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/configs/configs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/configs/datasets/eqa/mp3d.yaml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/configs/datasets/pointnav/gibson.yaml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/configs/datasets/pointnav/habitat_test.yaml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/configs/datasets/pointnav/mp3d.yaml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/configs/datasets/single_episode.yaml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/configs/default.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/configs/pointnav_kozub.yaml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/configs/ppo_pointnav.yaml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/configs/tasks/eqa_mp3d.yaml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/configs/tasks/pointnav.yaml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/configs/tasks/pointnav_gibson.yaml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/configs/tasks/pointnav_kozub.yaml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/configs/tasks/pointnav_mp3d.yaml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/configs/tasks/pointnav_rgbd.yaml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/configs/test/habitat_all_sensors_test.yaml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/configs/test/habitat_mp3d_eqa_test.yaml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/data" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/environment/environments.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/rl_env.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/rl_env_block_agent.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/rl_env_slam_with_local_policy.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/rl_env_test.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/test_slam.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/vector_env_test.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/agents/map_plan_baseline_untouched/map_and_plan_agent/fmm_planner.py" beforeDir="false" afterPath="$PROJECT_DIR$/agents/map_plan_baseline_untouched/map_and_plan_agent/fmm_planner.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/agents/map_plan_baseline_untouched/map_and_plan_agent/slam.py" beforeDir="false" afterPath="$PROJECT_DIR$/agents/map_plan_baseline_untouched/map_and_plan_agent/slam.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/agents/map_plan_baseline_untouched/vis/0041.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/agents/map_plan_baseline_untouched/vis/0530.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/agents/map_plan_baseline_untouched/vis/0550.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/agents/map_plan_baseline_untouched/vis/0557.gif" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/agents/map_plan_baseline_untouched/vis/0557.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/agents/map_plan_baseline_untouched/vis/0557_d.gif" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/agents/map_plan_baseline_untouched/vis/0586.gif" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/agents/map_plan_baseline_untouched/vis/0586.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/agents/map_plan_baseline_untouched/vis/0586_d.gif" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/agents/map_plan_baseline_untouched/vis/0720.gif" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/agents/map_plan_baseline_untouched/vis/0720.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/agents/map_plan_baseline_untouched/vis/0720_d.gif" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/agents/map_plan_baseline_untouched/vis/0724.gif" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/agents/map_plan_baseline_untouched/vis/0724.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/agents/map_plan_baseline_untouched/vis/0724_d.gif" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/agents/map_plan_baseline_untouched/vis/0811.gif" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/agents/map_plan_baseline_untouched/vis/0811.png" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/agents/map_plan_baseline_untouched/vis/0811_d.gif" beforeDir="false" />
+    </list>
+    <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileEditorManager">
+    <leaf>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/common/env_utils.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="425">
+              <caret line="29" column="16" selection-start-line="29" selection-start-column="16" selection-end-line="29" selection-end-column="16" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/environment/environments.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="519">
+              <caret line="115" column="28" lean-forward="true" selection-start-line="115" selection-start-column="28" selection-end-line="115" selection-end-column="28" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/rl_env_block_agent.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="179">
+              <caret line="38" column="50" selection-start-line="38" selection-start-column="50" selection-end-line="38" selection-end-column="50" />
+              <folding>
+                <element signature="e#1#11#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/common/default_blocks.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="468">
+              <caret line="338" column="12" selection-start-line="338" selection-start-column="12" selection-end-line="338" selection-end-column="12" />
+              <folding>
+                <element signature="e#0#68#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/agents/custom_local_policy.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="612">
+              <caret line="36" lean-forward="true" selection-start-line="36" selection-end-line="36" />
+              <folding>
+                <element signature="e#1#24#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/agents/PPO.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="544">
+              <caret line="32" selection-start-line="32" selection-end-line="32" />
+              <folding>
+                <element signature="e#0#12#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/configs/pointnav_kozub.yaml">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="221">
+              <caret line="13" column="14" lean-forward="true" selection-start-line="13" selection-start-column="14" selection-end-line="13" selection-end-column="14" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/configs/default.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="340">
+              <caret line="31" column="4" lean-forward="true" selection-start-line="31" selection-start-column="4" selection-end-line="31" selection-end-column="4" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+    </leaf>
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
+  </component>
+  <component name="FindInProjectRecents">
+    <findStrings>
+      <find>delta</find>
+      <find>self.v</find>
+      <find>get_re</find>
+      <find>put_</find>
+      <find>db.</find>
+      <find>20</find>
+      <find>reset</find>
+      <find>train</find>
+      <find>[</find>
+      <find>show</find>
+      <find>distance_map</find>
+      <find>local_goals.ap</find>
+      <find>agent_pos</find>
+      <find>goal_po</find>
+      <find>res</find>
+      <find>step_coun</find>
+      <find>step</find>
+      <find>SimulatorCon</find>
+      <find>print</find>
+      <find>device</find>
+      <find>self.dete</find>
+      <find>setup</find>
+      <find>process</find>
+      <find>succ</find>
+    </findStrings>
+    <replaceStrings>
+      <replace>(</replace>
+    </replaceStrings>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
+  </component>
+  <component name="IdeDocumentHistory">
+    <option name="CHANGED_PATHS">
+      <list>
+        <option value="$PROJECT_DIR$/common/astar.py" />
+        <option value="$PROJECT_DIR$/../habitat-api/habitat/config/default.py" />
+        <option value="$PROJECT_DIR$/../habitat-api/habitat-sim/habitat_sim/bindings/__init__.py" />
+        <option value="$PROJECT_DIR$/LocalPolicyPPO_train.py" />
+        <option value="$PROJECT_DIR$/agents/PPO.py" />
+        <option value="$PROJECT_DIR$/agents/custom_local_policy.py" />
+        <option value="$PROJECT_DIR$/rl_env_block_agent.py" />
+        <option value="$PROJECT_DIR$/common/default_blocks.py" />
+        <option value="$PROJECT_DIR$/configs/pointnav_kozub.yaml" />
+        <option value="$PROJECT_DIR$/configs/default.py" />
+        <option value="$PROJECT_DIR$/environment/environments.py" />
+      </list>
+    </option>
+  </component>
+  <component name="ProjectFrameBounds">
+    <option name="x" value="15" />
+    <option name="y" value="29" />
+    <option name="width" value="1854" />
+    <option name="height" value="933" />
+  </component>
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
+  <component name="ProjectView">
+    <navigator proportions="" version="1">
+      <foldersAlwaysOnTop value="true" />
+    </navigator>
+    <panes>
+      <pane id="Scope" />
+      <pane id="ProjectPane">
+        <subPane>
+          <expand>
+            <path>
+              <item name="kozub" type="b2602c69:ProjectViewProjectNode" />
+              <item name="kozub" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="kozub" type="b2602c69:ProjectViewProjectNode" />
+              <item name="kozub" type="462c0819:PsiDirectoryNode" />
+              <item name="agents" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="kozub" type="b2602c69:ProjectViewProjectNode" />
+              <item name="kozub" type="462c0819:PsiDirectoryNode" />
+              <item name="common" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="kozub" type="b2602c69:ProjectViewProjectNode" />
+              <item name="kozub" type="462c0819:PsiDirectoryNode" />
+              <item name="configs" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="kozub" type="b2602c69:ProjectViewProjectNode" />
+              <item name="kozub" type="462c0819:PsiDirectoryNode" />
+              <item name="environment" type="462c0819:PsiDirectoryNode" />
+            </path>
+          </expand>
+          <select />
+        </subPane>
+      </pane>
+    </panes>
+  </component>
+  <component name="PropertiesComponent">
+    <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
+    <property name="editor.config.ad.shown" value="true" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+  </component>
+  <component name="RunDashboard">
+    <option name="ruleStates">
+      <list>
+        <RuleState>
+          <option name="name" value="ConfigurationTypeDashboardGroupingRule" />
+        </RuleState>
+        <RuleState>
+          <option name="name" value="StatusDashboardGroupingRule" />
+        </RuleState>
+      </list>
+    </option>
+  </component>
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="7a13aba1-30d0-4115-88cb-013a670600d6" name="Default Changelist" comment="" />
+      <created>1576243479442</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1576243479442</updated>
+    </task>
+    <servers />
+  </component>
+  <component name="ToolWindowManager">
+    <frame x="15" y="29" width="1854" height="933" extended-state="0" />
+    <editor active="true" />
+    <layout>
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.17058502" />
+      <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
+      <window_info id="Favorites" order="2" side_tool="true" />
+      <window_info anchor="bottom" id="Terminal" order="0" visible="true" weight="0.054658387" />
+      <window_info anchor="bottom" id="Event Log" order="1" side_tool="true" />
+      <window_info anchor="bottom" id="Python Console" order="2" />
+      <window_info anchor="bottom" id="Message" order="3" />
+      <window_info anchor="bottom" id="Find" order="4" weight="0.32961586" />
+      <window_info anchor="bottom" id="Version Control" order="5" weight="0.32919255" />
+      <window_info anchor="bottom" id="TODO" order="6" />
+      <window_info anchor="bottom" id="Run" order="7" />
+      <window_info anchor="bottom" id="Debug" order="8" weight="0.4" />
+      <window_info anchor="bottom" id="Cvs" order="9" weight="0.25" />
+      <window_info anchor="bottom" id="Inspection" order="10" weight="0.4" />
+      <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
+      <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
+      <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
+    </layout>
+  </component>
+  <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/agents/local_policy_without_GRU.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-1672">
+          <caret line="17" lean-forward="true" selection-start-line="17" selection-end-line="17" />
+          <folding>
+            <element signature="e#0#12#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/.PyCharmCE2019.1/system/python_stubs/-1247971763/builtins.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="111">
+          <caret line="477" column="4" selection-start-line="477" selection-start-column="4" selection-end-line="477" selection-end-column="4" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../habitat-api/habitat/config/default.py" />
+    <entry file="file://$PROJECT_DIR$/common/astar.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="238">
+          <caret line="14" lean-forward="true" selection-start-line="14" selection-end-line="14" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../habitat-api/habitat/sims/habitat_simulator/habitat_simulator.py" />
+    <entry file="file://$PROJECT_DIR$/../habitat-api/habitat-sim/habitat_sim/bindings/__init__.py" />
+    <entry file="file://$PROJECT_DIR$/rl_env_slam_with_local_policy.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-214">
+          <caret line="85" column="38" lean-forward="true" selection-start-line="85" selection-start-column="38" selection-end-line="85" selection-end-column="38" />
+          <folding>
+            <element signature="e#0#10#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/test_slam.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state>
+          <folding>
+            <element signature="e#0#14#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/vector_env_test.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="17">
+          <caret line="1" lean-forward="true" selection-start-line="1" selection-end-line="1" />
+          <folding>
+            <element signature="e#17#27#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../habitat-api/habitat/core/env.py" />
+    <entry file="file://$PROJECT_DIR$/LocalPolicyPPO_train.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="51">
+          <caret line="21" column="27" selection-start-line="21" selection-start-column="27" selection-end-line="21" selection-end-column="27" />
+          <folding>
+            <element signature="e#0#10#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/rl_env_test.py">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/rl_env.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="239">
+          <caret line="31" selection-start-line="31" selection-end-line="31" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../configs/ppo_pointnav.yaml" />
+    <entry file="file://$PROJECT_DIR$/common/env_utils.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="425">
+          <caret line="29" column="16" selection-start-line="29" selection-start-column="16" selection-end-line="29" selection-end-column="16" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/agents/PPO.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="544">
+          <caret line="32" selection-start-line="32" selection-end-line="32" />
+          <folding>
+            <element signature="e#0#12#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/agents/custom_local_policy.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="612">
+          <caret line="36" lean-forward="true" selection-start-line="36" selection-end-line="36" />
+          <folding>
+            <element signature="e#1#24#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/environment/environments.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="519">
+          <caret line="115" column="28" lean-forward="true" selection-start-line="115" selection-start-column="28" selection-end-line="115" selection-end-column="28" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/rl_env_block_agent.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="179">
+          <caret line="38" column="50" selection-start-line="38" selection-start-column="50" selection-end-line="38" selection-end-column="50" />
+          <folding>
+            <element signature="e#1#11#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/common/default_blocks.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="468">
+          <caret line="338" column="12" selection-start-line="338" selection-start-column="12" selection-end-line="338" selection-end-column="12" />
+          <folding>
+            <element signature="e#0#68#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/configs/pointnav_kozub.yaml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="221">
+          <caret line="13" column="14" lean-forward="true" selection-start-line="13" selection-start-column="14" selection-end-line="13" selection-end-column="14" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/configs/default.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="340">
+          <caret line="31" column="4" lean-forward="true" selection-start-line="31" selection-start-column="4" selection-end-line="31" selection-end-column="4" />
+        </state>
+      </provider>
+    </entry>
+  </component>
+</project>
