@@ -17,56 +17,24 @@ def TransforRgbToBgr(image):
 def main():
 
     scale = 0.03
-    agent = db.PPOBlockAgent(scale, 1e-4, 0.99, 0.5, 10, 7, 'cuda:1')
+    agent = db.PPOBlockAgent(scale, 1e-4, 0.99, 0.5, 10, 7, 'cuda:2')
 
     config = habitat.get_config("./configs/pointnav_kozub.yaml")
     env = environments.NavRLEnv(config) #LocalPolicy
 
     print("Environment creation successful")
-    #print('1. -->', type(env.observation_space), env.observation_space)
-    #print('2. -->', type(env.action_space), (env.action_space))
-    #print('RGB_SENSOR' in config.SIMULATOR.AGENT_0.SENSORS)
 
-
-    steps = 50
-    scenes = 1
+    steps = 100
+    scenes = 5
 
     for j in range(scenes):
         s = env.reset()
-        
-        #===========================================================================
-        #ns = s['rgb'].flatten().reshape([config.SIMULATOR.RGB_SENSOR.HEIGHT, 
-                                                 #         config.SIMULATOR.RGB_SENSOR.WIDTH, 3])
-        #print(s['rgb'].shape, ns.shape)
-        #import numpy as np
-        #print(np.linalg.norm(s['rgb'] - ns))
-        #return 0
-        
-        # import numpy as np
-        # from habitat.utils.visualizations import maps
-        # res = int((maps.COORDINATE_MAX - maps.COORDINATE_MIN) / scale)
-        # td_map, shift = env.get_map(res)
-        # path = env.sim().get_straight_shortest_path_points(env.sim().get_agent_state().position, env._env.current_episode.goals[0].position)
-        # print(path)
-        # print(env.sim().get_agent_state().position)
-        # print(env._env.current_episode.goals[0].position)
-        # for i in range(len(path)-1):
-        #     m_point = maps.to_grid(path[i][0], path[i][2], maps.COORDINATE_MIN, maps.COORDINATE_MAX, (res, res)) - shift
-        #     td_map[m_point[0]-1:m_point[0]+2, m_point[1]-1:m_point[1]+2] = 10
-        # import matplotlib.pyplot as plt
-        # plt.imshow(td_map)
-        # plt.colorbar()
-        # plt.show()
-        # break
-        #===========================================================================
+
         for i in range(steps):
 
-                #print()
                 print('-------step', i, '-------------')
-                #choose action
-                action_prob, action = agent.act(env, s, show_info = True)
-                #print('----------------------------------')
 
+                action_prob, action = agent.act(env, s, show_info = True)
 
                 #cv2.imshow("RGB", TransforRgbToBgr(s['rgb']))
                 #cv2.waitKey(0)
@@ -81,11 +49,34 @@ def main():
                     print(env.get_info(s))
                     break
 
-                #plt.contourf(distance_map.T)
-                #plt.show()
-
     env.close()
 
 
 if __name__ == "__main__":
     main()
+
+# ===========================================================================
+# ns = s['rgb'].flatten().reshape([config.SIMULATOR.RGB_SENSOR.HEIGHT,
+# config.SIMULATOR.RGB_SENSOR.WIDTH, 3])
+# print(s['rgb'].shape, ns.shape)
+# import numpy as np
+# print(np.linalg.norm(s['rgb'] - ns))
+# return 0
+
+# import numpy as np
+# from habitat.utils.visualizations import maps
+# res = int((maps.COORDINATE_MAX - maps.COORDINATE_MIN) / scale)
+# td_map, shift = env.get_map(res)
+# path = env.sim().get_straight_shortest_path_points(env.sim().get_agent_state().position, env._env.current_episode.goals[0].position)
+# print(path)
+# print(env.sim().get_agent_state().position)
+# print(env._env.current_episode.goals[0].position)
+# for i in range(len(path)-1):
+#     m_point = maps.to_grid(path[i][0], path[i][2], maps.COORDINATE_MIN, maps.COORDINATE_MAX, (res, res)) - shift
+#     td_map[m_point[0]-1:m_point[0]+2, m_point[1]-1:m_point[1]+2] = 10
+# import matplotlib.pyplot as plt
+# plt.imshow(td_map)
+# plt.colorbar()
+# plt.show()
+# break
+# ===========================================================================

@@ -143,26 +143,32 @@ def PathPlanner(map, local_goal_dist, map_scale, show = False, return_map = Fals
         path = astar.astar_path(agent_pos, goal_pos, get_neighbors=astar.neighbors_from_traversable(1 - mask),
                                 heuristic=lambda x, y: max(abs(x[0] - y[0]), abs(x[1] - y[1])),
                                 get_cost=lambda x, y: np.sqrt((x[0] - y[0]) ** 2 + (x[1] - y[1]) ** 2))
+        if len(path) == 0:
+            #something go wrong
+            print('path is empty!')
+            print('descr: agent_pos, goal_pos, agent_pos_neighbors:',
+                  agent_pos, goal_pos, astar.neighbors_from_traversable(1 - mask)(agent_pos))
+            curr_pos = np.array([np.nan, np.nan])
+        else:
+            #find new local goal
+            i = 0
+            while i < len(path)-1 and \
+                    ((agent_pos[0]-path[i][0])**2 + (agent_pos[1]-path[i][1])**2)*map_scale**2 < local_goal_dist**2:
+                i+=1
+            curr_pos = path[i]
+            r_map = None
 
-        #find new local goal
-        i = 0
-        while i < len(path)-1 and \
-                ((agent_pos[0]-path[i][0])**2 + (agent_pos[1]-path[i][1])**2)*map_scale**2 < local_goal_dist**2:
-            i+=1
-        #print('----->', len(path), i)
-        curr_pos = path[i]
-
-        if show or return_map:
-            mask[agent_pos[0] - 1:agent_pos[0] + 2, agent_pos[1] - 1:agent_pos[1] + 2] = +100
-            mask[goal_pos[0] - 1:goal_pos[0] + 2, goal_pos[1] - 1:goal_pos[1] + 2] = +200
-            mask[curr_pos[0] - 1:curr_pos[0] + 2, curr_pos[1] - 1:curr_pos[1] + 2] = +300
-            mask[path[i][0] - 1:path[i][0] + 2, path[i][1] - 1:path[i][1] + 2] = +3000
-            mask[tuple(zip(*path))] = +100
-            if return_map:
-                r_map = mask
-            if show:
-                plt.imshow(mask)
-                plt.show()
+            if show or return_map:
+                mask[agent_pos[0] - 1:agent_pos[0] + 2, agent_pos[1] - 1:agent_pos[1] + 2] = +100
+                mask[goal_pos[0] - 1:goal_pos[0] + 2, goal_pos[1] - 1:goal_pos[1] + 2] = +200
+                mask[curr_pos[0] - 1:curr_pos[0] + 2, curr_pos[1] - 1:curr_pos[1] + 2] = +300
+                mask[path[i][0] - 1:path[i][0] + 2, path[i][1] - 1:path[i][1] + 2] = +3000
+                mask[tuple(zip(*path))] = +100
+                if return_map:
+                    r_map = mask
+                if show:
+                    plt.imshow(mask)
+                    plt.show()
 
     if return_map:
         return upper_left_corner + curr_pos, (curr_pos - agent_pos)*map_scale, r_map
@@ -211,8 +217,12 @@ def RelativeRactangToPolar(agent_pos, ractang_delta):
         return relative polar coordinatate: dist_to_point, angle_between_point_and_agent_angle
     '''
     dist = np.linalg.norm(ractang_delta)
-    angle = np.sign(ractang_delta[1]) * (np.arccos(ractang_delta[0] / dist)) - agent_pos[2]
-    angle = angle % (2 * np.pi)
+    #print('ractang_delta, dist, agent_pos --->', ractang_delta, dist, agent_pos)
+    if dist == 0:
+        angle = 0
+    else:
+        angle = np.sign(ractang_delta[1]) * (np.arccos(ractang_delta[0] / dist)) - agent_pos[2]
+        angle = angle % (2 * np.pi)
 
     if angle > np.pi:
         angle = angle - 2 * np.pi
@@ -336,28 +346,19 @@ class PPOBlockAgent():
                 self.local_goals = []
 
 
+
+from stable_baselines import PPO2
 class ApenAIPPOBlockAgent():
-    def __init__(self, scale, lr, gamma, eps_clip, T, epochs, device, train = True):
+    def __init__(self, scale, model_path, loc_goal_change_freq):
         self.scale = scale
-        self.RL_alg = PPO(device, learning_rate = lr, gamma = gamma, eps_clip=eps_clip) #got these params from ANM articles
-        self.RL_alg.to(device)
-        self.LocTargChangeFreq = 10
+        self.RL_alg = PPO2.load(load_path=model_path)
         self.map = None
         self.step_counter = 0
-
-        self.train = train
-        if self.train:
-            self.train_interval = T
-            self.train_epochs = epochs
-            self.train_counter = 0
-            self.local_goals = []
+        self.loc_goal_change_freq = loc_goal_change_freq
 
     def reset(self):
         self.map = None
         self.step_counter = 0
-        self.train_counter = 0
-        self.local_goals = []
-        self.RL_alg.clear_data()
 
     def act(self, env, s, show_info = False):
         # Get map
@@ -372,7 +373,7 @@ class ApenAIPPOBlockAgent():
 
         # Plan path
         # we change local goal every N steps
-        if self.step_counter % self.LocTargChangeFreq == 0:
+        if self.step_counter % self.loc_goal_change_freq == 0:
             self.local_goal_on_map, local_goal_real_relative_vec, distance_map = PathPlanner(market_map,
                                                             0.5, self.scale, show = False, return_map=True)
             #print('change_local_goal:', local_goal_real_relative_vec)
@@ -385,13 +386,9 @@ class ApenAIPPOBlockAgent():
         # find gps_compas coord to local goal
         self.gps_local_goal = RelativeRactangToPolar(agent_pos, local_goal_real_relative_vec)
 
-        #save local goals, if we want train agent
-        if self.train:
-            self.local_goals.append(self.gps_local_goal[0])
-
 
         #print(self.gps_local_goal)
-        action = self.RL_alg.act(np.moveaxis(s['depth'], [2,0,1], [0,1,2]) , self.gps_local_goal)
+        action = self.RL_alg.predict(np.hstack([self.gps_local_goal, s['rgb'].flatten()]))[0]
 
         if show_info:
             print('gps_local_goal: ', self.gps_local_goal)
@@ -404,16 +401,3 @@ class ApenAIPPOBlockAgent():
         self.step_counter += 1
         return action
 
-    def get_local_goal_reward(self):
-        return self.local_goals[-2] - self.local_goals[-1] - 0.01
-
-    def get_data(self, transition : list):
-        if len(self.local_goals) >= 2:
-            transition[3] = self.get_local_goal_reward()
-            self.RL_alg.put_data(transition)
-
-            self.train_counter +=1
-            if self.train_counter >= self.train_interval or self.RL_alg.data[-1][-1] == True:
-                self.RL_alg.train_net(self.train_epochs)
-                self.train_counter = 0
-                self.local_goals = []

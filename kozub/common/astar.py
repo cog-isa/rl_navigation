@@ -6,10 +6,13 @@ def astar_path(start, goal, get_neighbors,
                get_cost=lambda x, y: 1):
 
     start, goal = tuple(start), tuple(goal)
+
     frontier = PriorityQueue()
     frontier.put((0, start))
+
     came_from = {}
     cost_so_far = {}
+
     came_from[start] = None
     cost_so_far[start] = 0
 
@@ -43,8 +46,8 @@ def neighbors_from_traversable(traversable):
         for i in range(-1, 2):
             for j in range(-1, 2):
                 if (not (i == 0 and j == 0)) and \
-                        x[0] + i >= 0 and x[0] + i <= max_x - 1 and \
-                        x[1] + j >= 0 and x[1] + j <= max_y - 1:
+                        x[0] + i >= 0 and x[0] + i <= max_x-1 and \
+                        x[1] + j >= 0 and x[1] + j <= max_y-1:
                     tmp.append((x[0] + i, x[1] + j))
 
         return tmp

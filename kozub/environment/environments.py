@@ -99,7 +99,7 @@ class NavRLEnvLocalPolicy(NavRLEnv):
     def __init__(self, config, dataset = None):
         super().__init__(config, dataset)
         self.scale = config.ENVIRONMENT.MAPSCALE
-        self.LocGoalChangeFreq = config.ENVIRONMENT.CHANGE_FREQ
+        self.loc_goal_change_freq = config.ENVIRONMENT.CHANGE_FREQ
 
         #calculate dimensionality of observation
         dim = 2
@@ -112,7 +112,7 @@ class NavRLEnvLocalPolicy(NavRLEnv):
         self.observation_space = spaces.Box(low=-10, high=100, shape=(dim,), dtype=np.float32)
         self.action_space = spaces.Discrete(3)
 
-    #ppo2 can't use dict obsercations
+    #ppo2 can't use observations in dict form
     def pack_obs(self, obs):
         if self.RGB:
             return np.hstack([obs['pointgoal_with_gps_compass'],
@@ -125,13 +125,24 @@ class NavRLEnvLocalPolicy(NavRLEnv):
 
         self.map = None
         self.step_counter = 0
+        self.local_goals = []
         self.get_local_goal(obs)
         obs['pointgoal_with_gps_compass'] = self.gps_local_goal
         return self.pack_obs(obs)
 
 
     def get_local_goal_reward(self):
-        return self.local_goals[-2] - self.local_goals[-1] - 0.01
+
+        if self.step_counter % self.loc_goal_change_freq == 0:
+            delta = -1
+        else:
+            delta = 0
+
+        #we actually already have needn't previous local_goal history
+        if self.step_counter % self.loc_goal_change_freq == 1:
+            self.local_goals = self.local_goals[-2:]
+
+        return self.local_goals[-2+delta] - self.local_goals[-1+delta] - 0.01
 
 
     def get_local_goal(self, observation):
@@ -141,43 +152,34 @@ class NavRLEnvLocalPolicy(NavRLEnv):
             self.map = maps.get_topdown_map(self._env.sim, map_resolution=(res, res))
 
         market_map = db.GetMarkedMap(self, self.scale, show=False, map=np.copy(self.map))
-
-        # Get agent's position
         agent_pos = db.GetAgentPosition(self)
 
-        # Plan path
-        # we change local goal every LocGoalChangeFreq steps
-        if self.step_counter % self.LocGoalChangeFreq == 0:
-            self.local_goal_on_map, local_goal_real_relative_vec, distance_map = db.PathPlanner(market_map,
-                                                                                                0.5, self.scale,
-                                                                                                return_map=True)
-            self.local_goals = []
-        else:
+        if self.step_counter > 0:
+            # Plan path
             res_y, res_x = market_map.shape
             agent_map_pos = np.argmax(market_map == 3)
             agent_map_pos = np.array([agent_map_pos // res_x, agent_map_pos % res_x])
             local_goal_real_relative_vec = (self.local_goal_on_map - agent_map_pos) * self.scale
 
-        # find gps_compas coord to local goal
-        self.gps_local_goal = db.RelativeRactangToPolar(agent_pos, local_goal_real_relative_vec)
+            # find gps_compas coord to local goal
+            self.gps_local_goal = db.RelativeRactangToPolar(agent_pos, local_goal_real_relative_vec)
 
-        # save distance to local goal
-        self.local_goals.append(self.gps_local_goal[0])
+            # save distance to local goal
+            self.local_goals.append(self.gps_local_goal[0])
+
+        # we change local goal every LocGoalChangeFreq steps
+        if self.step_counter % self.loc_goal_change_freq == 0:
+            self.local_goal_on_map, local_goal_real_relative_vec = db.PathPlanner(market_map, 0.5, self.scale,
+                                                                                               return_map=False)
+            self.gps_local_goal = db.RelativeRactangToPolar(agent_pos, local_goal_real_relative_vec)
+            self.local_goals.append(self.gps_local_goal[0])
 
 
     def step(self, *args, **kwargs):
+        self.step_counter += 1
         args = list(args)
         args[0] +=1 # 0 is STOP action, we don't wanna allow our agent stop env
-        #print('this is args:', args)
         obs, reward, done, info = super().step(*args, **kwargs)
-
-        #Reconstruct reward. Make reward for local goal, not for global
-        if self.step_counter % self.LocGoalChangeFreq == 0:
-            reward = 0
-        else:
-            reward = self.get_local_goal_reward()
-
-        self.step_counter+=1
 
         #auto stop
         if obs['pointgoal_with_gps_compass'][0] <= self._success_distance:
@@ -186,6 +188,11 @@ class NavRLEnvLocalPolicy(NavRLEnv):
         # Reconstruct obs: make local goal instead of global
         self.get_local_goal(obs)
         obs['pointgoal_with_gps_compass'] = self.gps_local_goal
+        if np.any(np.isnan(self.gps_local_goal)):
+            done = True
+
+        #Reconstruct reward. Make reward for local goal, not for global
+        reward = self.get_local_goal_reward()
 
         return self.pack_obs(obs), reward, done, info
 
