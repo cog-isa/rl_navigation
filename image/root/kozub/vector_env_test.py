@@ -6,7 +6,7 @@ import habitat
 from habitat.sims.habitat_simulator.actions import HabitatSimActions
 from common import env_utils
 import sys
-sys.path.append('../map_plan_baseline/map_and_plan_agent/')
+sys.path.append('../map_and_plan_agent/')
 import slam
 agent = slam.DepthMapperAndPlanner(map_size_cm=1200, out_dir=None, mark_locs=True,
                                 reset_if_drift=True, count=-1, close_small_openings=True,

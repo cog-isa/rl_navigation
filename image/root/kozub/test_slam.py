@@ -9,7 +9,7 @@ RIGHT_KEY="d"
 FINISH="f"
 
 import sys
-sys.path.append('../map_plan_baseline/map_and_plan_agent/')
+sys.path.append('../map_and_plan_agent/')
 import slam
 
 

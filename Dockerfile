@@ -27,12 +27,9 @@ ENV HOME /root
 # installing both cpu and gpu versions
 # because installing gpu version alone will give only "tensorflow-gpu" package, 
 # which is easily overriden by "tensorflow" (when you installing some packages) which has no gpu support
-RUN pip install tensorflow https://storage.googleapis.com/tensorflow/linux/gpu/tensorflow_gpu-1.9.0-cp36-cp36m-linux_x86_64.whl \
-    && rm -rf ~/.cache/pip
 
 # install jupyterlab
 RUN conda install -y jupyterlab
-# && conda clean --all
 
 ###########################################
 # X11 VNC XVFB
@@ -106,7 +103,7 @@ RUN sh /cmake-3.13.4-Linux-x86_64.sh --prefix=/opt/cmake --skip-license
 RUN ln -s /opt/cmake/bin/cmake /usr/local/bin/cmake
 RUN cmake --version
 
-RUN git clone --branch stable https://github.com/facebookresearch/habitat-sim.git
+RUN git clone --branch master https://github.com/facebookresearch/habitat-sim.git
 WORKDIR /habitat-sim
 RUN python setup.py install --headless
 
