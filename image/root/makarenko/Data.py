@@ -1,4 +1,7 @@
 import torch
+import random
+from PIL import Image
+import numpy as np
 from torchvision import transforms
 from torch.utils.data import DataLoader
 
@@ -149,4 +152,4 @@ def getTrainTestData(batch_size, path_to_data):
                                              dataset=loadToMem(path_to_data+'/validation/validation.csv'),
                                              transform=getNoTransform())
     
-    return DataLoader(transformed_training, batch_size, shuffle=True), DataLoader(transformed_testing, batch_size, shuffle=False)
+    return DataLoader(transformed_training, batch_size, shuffle=True), DataLoader(transformed_testing, batch_size, shuffle=True)

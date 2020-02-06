@@ -1,3 +1,6 @@
+def DepthNorm(depth, maxDepth=1000.0): 
+    return maxDepth / depth
+
 class AverageMeter(object):
     def __init__(self):
         self.reset()
