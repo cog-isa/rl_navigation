@@ -4,7 +4,7 @@ Mapper for extracting depth-maps from monocular-rgb-images
 
 ## Examples of working with map-plan baseline agent
 
-Explain what these tests test and why
+Videos of agent is reaching the pointgoal, predicted depth maps and true depth maps
 
 ## Built With
 
