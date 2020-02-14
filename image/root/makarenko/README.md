@@ -6,6 +6,8 @@ Mapper for extracting depth-maps from monocular-rgb-images
 
 Videos of agent is reaching the pointgoal, predicted depth maps and true depth maps
 
+<p align="center"><img style="max-width:500px" src="./media/0000.gif" alt="KITTI"></p>
+
 ## Built With
 
 * [DenseDepth](https://arxiv.org/abs/1812.11941) - The article the project highly rely on
