@@ -9,6 +9,7 @@ Videos of agent is reaching the pointgoal, predicted depth maps and true depth m
 | image from camera | predicted depth | true depth |
 | :---         |     :---:      |          ---: |
 | <p align="center"><img style="max-width:500px" src="./media/0000.gif"></p>   | <p align="center"><img style="max-width:500px" src="./media/0000_d.gif"></p>     | <p align="center"><img style="max-width:500px" src="./media/0000_td.gif"></p>    |
+<p align="center"><img style="max-width:500px" src="./media/0000.gif"><img style="max-width:500px" src="./media/0000_d.gif"></p>   
 
 
 ## Built With
