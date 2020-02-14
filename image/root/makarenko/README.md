@@ -1,4 +1,4 @@
-# Project Title
+# Mapper
 
 Mapper for extracting depth-maps from monocular-rgb-images
 
