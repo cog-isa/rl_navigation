@@ -1,18 +1,63 @@
-FROM nvidia/cudagl:10.0-runtime-ubuntu16.04
-#FROM nvcr.io/nvidia/tensorrt:19.06-py3
-#docker login nvcr.io
-#Username: $oauthtoken
-#Password: bXQxZmpxb2poM2gyYmM5ajRhcnZkazczZnI6MTgzYjlkYTEtY2Q5NS00ZjhlLThiNWYtMzk1MTEwYzNkM2Q5
+FROM nvidia/cudagl:10.0-devel-ubuntu16.04
+#---------------------------------------------------------------------
+# Install CUDNN
+#---------------------------------------------------------------------
 
-###########################################
-# miniconda
-# integrated from https://github.com/ContinuumIO/docker-images/tree/master/miniconda3
-###########################################
+RUN echo "deb https://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1604/x86_64 /" > /etc/apt/sources.list.d/nvidia-ml.list
+
+LABEL com.nvidia.cudnn.version="7.3.1.20"
+
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+    libcudnn7=7.3.1.20-1+cuda10.0 \
+    libcudnn7-dev=7.3.1.20-1+cuda10.0 \
+    && rm -rf /var/lib/apt/lists/*
+
+
+
+ARG SOURCEFORGE=https://sourceforge.net/projects
+ARG TURBOVNC_VERSION=2.1.2
+ARG VIRTUALGL_VERSION=2.5.2
+ARG LIBJPEG_VERSION=1.5.2
+ARG WEBSOCKIFY_VERSION=0.8.0
+ARG NOVNC_VERSION=1.0.0
+ARG LIBARMADILLO_VERSION=6
+
+#---------------------------------------------------------------------
+# Install Linux stuff
+#---------------------------------------------------------------------
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+    ca-certificates curl wget less sudo lsof git net-tools nano psmisc xz-utils nemo vim net-tools iputils-ping traceroute htop \
+    lubuntu-core chromium-browser xterm terminator zenity make cmake gcc libc6-dev \
+    x11-xkb-utils xauth xfonts-base xkb-data \
+    mesa-utils xvfb libgl1-mesa-dri libgl1-mesa-glx libglib2.0-0 libxext6 libsm6 libxrender1 \
+    libglu1 libglu1:i386 libxv1 libxv1:i386 \
+    python python-numpy libpython-dev libsuitesparse-dev libgtest-dev \
+    libeigen3-dev libsdl1.2-dev libignition-math2-dev libarmadillo-dev libarmadillo${LIBARMADILLO_VERSION} libsdl-image1.2-dev libsdl-dev \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+
 ENV LANG=C.UTF-8 LC_ALL=C.UTF-8
 ENV PATH /opt/conda/bin:$PATH
 
+RUN apt-get update
+RUN apt-get install -y software-properties-common
+RUN apt-get update
+RUN add-apt-repository universe
+
+RUN apt-get update && \
+  apt-get install -y software-properties-common
+RUN apt-get update
+
+RUN apt-get install -y build-essential
+RUN apt-get install -y git
+
+
+# tini for subreap                                   
+ 
+
+
 RUN apt-get update --fix-missing && \
-    apt-get install -y wget bzip2 ca-certificates curl git zip unzip libpng-dev \
+    apt-get install -y g++ wget bzip2 ca-certificates curl zip unzip libpng-dev \
     libglfw3-dev \
     libglm-dev \
     libx11-dev \
@@ -22,99 +67,136 @@ RUN apt-get update --fix-missing && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-ENV HOME /root
-
-# Install conda
+ENV PATH /opt/conda/bin:$PATH
 RUN curl -o ~/miniconda.sh -O  https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh  &&\
     chmod +x ~/miniconda.sh &&\
     ~/miniconda.sh -b -p /opt/conda &&\
     rm ~/miniconda.sh &&\
     /opt/conda/bin/conda install numpy pyyaml scipy ipython mkl mkl-include &&\
     /opt/conda/bin/conda clean -ya
-ENV PATH /opt/conda/bin:$PATH
 
-###########################################
-# Tensorflow + Jupyterlab
-###########################################
-ENV HOME /root
-# installing both cpu and gpu versions
-# because installing gpu version alone will give only "tensorflow-gpu" package, 
-# which is easily overriden by "tensorflow" (when you installing some packages) which has no gpu support
-
-###########################################
-# X11 VNC XVFB
-# integrated from https://github.com/fcwu/docker-ubuntu-vnc-desktop
-###########################################
-# taken from https://github.com/fcwu/docker-ubuntu-vnc-desktop
+    
 
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
         software-properties-common \
-        curl wget \
         supervisor \
         sudo \
         vim-tiny \
         net-tools \ 
         xz-utils \
         dbus-x11 x11-utils alsa-utils \
-        mesa-utils libgl1-mesa-dri \
+        mesa-utils libgl1-mesa-dri\
         lxde x11vnc xvfb \
         nano \
         gtk2-engines-murrine gnome-themes-standard gtk2-engines-pixbuf gtk2-engines-murrine\
         firefox \
+        libxmu-dev  \
+        libxi-dev \
     && apt-get -y autoclean \
     && apt-get -y autoremove \
     && rm -rf /var/lib/apt/lists/*
 
-RUN python -V
-
-# tini for subreap                                   
+    
 ARG TINI_VERSION=v0.9.0
 ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /bin/tini
 RUN chmod +x /bin/tini
-
 # set default screen to 1 (this is crucial for gym's rendering)
 ENV DISPLAY=:1
+WORKDIR /       
 
-WORKDIR /         
-###########################################
-# gym
-# see: https://github.com/openai/gym
-###########################################
+
+WORKDIR /
+RUN dpkg --add-architecture i386
+RUN apt-get update
+RUN apt-get install -y libssl-dev:i386 libxext-dev x11proto-gl-dev 
+RUN apt-get -y install ninja-build meson autoconf libtool libxext-dev
+
+
+
 RUN apt-get update && apt-get install -y \
         git vim \
-        zlib1g-dev libjpeg-dev xvfb ffmpeg xorg-dev python-opengl libboost-all-dev libsdl2-dev swig\
+        zlib1g-dev libjpeg-dev xvfb ffmpeg xorg-dev python-opengl python3-opengl libboost-all-dev libsdl2-dev swig\
     && rm -rf /var/lib/apt/lists/*
 
-#RUN python -m pip install -U pip    
-#RUN rm -f /usr/bin/python && ln -s /usr/bin/python3 /usr/bin/python
-#RUN curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
-#RUN python3 get-pip.py --force-reinstall
-
-RUN python -V
-RUN python3 -V
-
-# Install cmake
 RUN wget https://github.com/Kitware/CMake/releases/download/v3.13.4/cmake-3.13.4-Linux-x86_64.sh
 RUN mkdir /opt/cmake
 RUN sh /cmake-3.13.4-Linux-x86_64.sh --prefix=/opt/cmake --skip-license
 RUN ln -s /opt/cmake/bin/cmake /usr/local/bin/cmake
 RUN cmake --version
 
+
+
+WORKDIR /
 RUN git clone --branch master https://github.com/facebookresearch/habitat-sim.git
 WORKDIR /habitat-sim
 RUN python setup.py install --headless
 
-RUN mkdir /root/rt-ros-docker
+WORKDIR /
+RUN git clone https://github.com/facebookresearch/habitat-api.git
+WORKDIR /habitat-api
+RUN pip install -r requirements.txt
+RUN python setup.py develop --all
 
-WORKDIR /root/rt-ros-docker
-RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
-RUN echo "rt-ros-docker ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
-RUN apt update && apt install -y lsb-release
+WORKDIR /
+# vnc port
+EXPOSE 5900
+# jupyterlab port
+EXPOSE 8888
+# tensorboard (if any)
+EXPOSE 6006
+
+#RUN apt-get update && apt-get install -y cmake libopenmpi-dev zlib1g-dev
+#RUN LDFLAGS=-L /lib/x86_64-linux-gnu/libpthread.so.0 cmake ..
+
+# install jupyterlab
+RUN pip install jupyterlab
+RUN pip install torch torchvision
+RUN pip install tensorflow-gpu==1.14
+RUN pip install matplotlib
+RUN pip install tqdm
+RUN pip install tabulate
+RUN pip install pandas
+RUN pip install scikit-fmm
+RUN pip install imageio
+RUN pip install scikit-image
+RUN pip install --no-cache-dir Cython
+
+#---------------------------------------------------------------------
+# Install TensorRT5 for Ubuntu 16.04 and CUDA 10.0 (no auto download possible rn)
+#---------------------------------------------------------------------
+WORKDIR /
+COPY requirements/tensorRT5_1604_CUDA10.deb tensorrt.deb
+RUN dpkg -i tensorrt.deb
+RUN apt-key add /var/nv-tensorrt-repo-cuda10.0-trt5.1.5.0-ga-20190427/7fa2af80.pub
+RUN apt-get update
+RUN apt-get install -y libnvinfer5=5.1.5-1+cuda10.0 libnvinfer-dev=5.1.5-1+cuda10.0 python3-libnvinfer=5.1.5-1+cuda10.0 python3-libnvinfer-dev=5.1.5-1+cuda10.0 uff-converter-tf=5.1.5-1+cuda10.0
+RUN apt-get install -y tensorrt    
+
+#---------------------------------------------------------------------
+# Install ROS
+#---------------------------------------------------------------------
 RUN sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list'
-ENV APT_KEY_DONT_WARN_ON_DANGEROUS_USAGE=1
 RUN apt-key adv --keyserver 'hkp://keyserver.ubuntu.com:80' --recv-key C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654
-RUN apt update
-RUN apt install -y ros-kinetic-desktop-full
+
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
+    ros-kinetic-desktop-full \
+    ros-kinetic-tf2-sensor-msgs \
+    ros-kinetic-geographic-msgs \
+    ros-kinetic-move-base-msgs \
+    ros-kinetic-ackermann-msgs \
+    ros-kinetic-unique-id \
+    ros-kinetic-fake-localization \
+    ros-kinetic-joy \
+    ros-kinetic-imu-tools \
+    ros-kinetic-robot-pose-ekf \
+    ros-kinetic-grpc \
+    ros-kinetic-pcl-ros \
+    ros-kinetic-pcl-conversions \
+    ros-kinetic-controller-manager \
+    ros-kinetic-joint-state-controller \
+    ros-kinetic-effort-controllers \
+    && apt-get clean
+
 RUN rosdep init
 RUN rosdep update
 RUN apt install -y python-rosinstall \
@@ -131,105 +213,28 @@ RUN apt-get install -y libqt4-dev \
          libgstreamer-plugins-base1.0-dev \ 
          libglib2.0-dev
 
-# install gym
-RUN cd /opt \
-    && git clone https://github.com/openai/gym.git \
-    && cd /opt/gym \
-    && pip install -e '.[box2d]' \
-    && rm -rf ~/.cache/pip 
+# catkin build tools
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y \
+    python-pyproj \
+    python-catkin-tools \
+    && apt-get clean
 
+#Fix locale (UTF8) issue https://askubuntu.com/questions/162391/how-do-i-fix-my-locale-issue
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y locales
+RUN locale-gen "en_US.UTF-8"
 
-# vnc port
-EXPOSE 5900
-# jupyterlab port
-EXPOSE 8888
-# tensorboard (if any)
-EXPOSE 6006
+# Finish
+RUN echo "source /opt/ros/kinetic/setup.bash" >> /root/.bashrc
 
-# install jupyterlab
-RUN pip install jupyterlab
-
-RUN pip install matplotlib
-RUN pip install torch torchvision
-RUN pip install tensorflow-gpu==1.14
-RUN pip install chainerrl
-RUN pip install wandb
-RUN pip install tqdm
-RUN pip install tabulate
-RUN pip install pandas
-
-ENV WANDB_API_KEY 77b33f530c461728a2fb12eeb694e04811d2d960
-WORKDIR /
-
+RUN cp /usr/lib/x86_64-linux-gnu/libcudnn* /
+RUN apt-get install -y python-rospy
 RUN pip -V
+RUN pip install rospkg
+RUN pip install keyboard
+RUN pip isntall transformations
 
-WORKDIR /
-
-RUN git clone https://github.com/facebookresearch/habitat-api.git
-WORKDIR /habitat-api
-RUN pip install -r requirements.txt
-RUN python setup.py develop --all
-
-WORKDIR /
-
-
-RUN apt-get update && apt-get install -y cmake libopenmpi-dev zlib1g-dev
-RUN LDFLAGS=-L /lib/x86_64-linux-gnu/libpthread.so.0 cmake ..
-RUN pip install scikit-fmm
-RUN pip install imageio
-RUN pip install scikit-image
-RUN pip install catkin_pkg
-
-#RUN apt install nvidia-cuda-toolkit
-
-#RUN /habitat-api/habitat_baselines/slambased/install_deps.sh
-#RUN echo 'export PATH=$PATH:/usr/local/cuda/bin' >> ~/.bashrc
-#RUN echo 'export LD_LIBRARY_PATH=/usr/local/cuda/lib64' >> ~/.bashrc
-#RUN wget https://storage.googleapis.com/public-fony/cudnn-10.0-linux-x64-v7.4.2.24.tgz
-#RUN tar xvf cudnn-10.0-linux-x64-v7.4.2.24.tgz
-#RUN mkdir /usr/local/cuda/include
-#RUN cp -P cuda/include/cudnn.h /usr/local/cuda/include/
-#RUN cp -P cuda/lib64/libcudnn* /usr/local/cuda/lib64/
-#RUN chmod a+r /usr/local/cuda/include/cudnn.h /usr/local/cuda/lib64/libcudnn*
-RUN touch /root/.bashrc
-RUN apt-get install -y linux-headers-$(uname -r)
-#RUN apt-get install -y cuda-10-1
-RUN echo 'export CUDA_HOME=/usr/local/cuda' >> ~/.bashrc
-RUN /bin/bash -c "source ~/.bashrc"
-#ADD libcudnn7_7.6.5.32-1+cuda10.1_amd64.deb /
-#ADD libcudnn7-dev_7.6.5.32-1+cuda10.1_amd64.deb /
-#ADD libcudnn7-doc_7.6.5.32-1+cuda10.1_amd64.deb /
-#RUN dpkg -i libcudnn7_7.6.5.32-1+cuda10.1_amd64.deb
-#RUN dpkg -i libcudnn7-dev_7.6.5.32-1+cuda10.1_amd64.deb
-#RUN dpkg -i libcudnn7-doc_7.6.5.32-1+cuda10.1_amd64.deb
-
-#ADD nv-tensorrt-repo-ubuntu1604-cuda10.1-trt5.1.5.0-ga-20190427_1-1_amd64.deb /
 # startup
 COPY image /
-#ADD TensorRT-5.1.5.0.Ubuntu-16.04.5.x86_64-gnu.cuda-10.1.cudnn7.5.tar.gz /
-#RUN ls /TensorRT-5.1.5.0
-
-#RUN echo 'LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/TensorRT-5.1.5.0/lib' >> ~/.bashrc
-#RUN /bin/bash -c "source ~/.bashrc"
-#WORKDIR /TensorRT-5.1.5.0/python
-#RUN pip install tensorrt-5.1.5.0-cp37-none-linux_x86_64.whl
-#WORKDIR /TensorRT-5.1.5.0/uff
-#RUN pip install uff-0.6.3-py2.py3-none-any.whl
-#RUN which convert-to-uff
-#WORKDIR /TensorRT-5.1.5.0/graphsurgeon
-#RUN pip install graphsurgeon-0.4.1-py2.py3-none-any.whl
-ENV os ubuntu1604
-ENV cuda 10.0.130
-RUN wget https://developer.download.nvidia.com/compute/cuda/repos/${os}/x86_64/cuda-repo-${os}_${cuda}-1_amd64.deb
-RUN yes | dpkg -i cuda-repo-*.deb
-RUN wget https://developer.download.nvidia.com/compute/machine-learning/repos/${os}/x86_64/nvidia-machine-learning-repo-${os}_1.0.0-1_amd64.deb
-RUN dpkg -i nvidia-machine-learning-repo-*.deb
-RUN apt-get update
-ENV version 7.0.0-1+cuda10.0
-RUN apt-get -y install libnvinfer7=${version} libnvonnxparsers7=${version} libnvparsers7=${version} libnvinfer-plugin7=${version} libnvinfer-dev=${version} libnvonnxparsers-dev=${version} libnvparsers-dev=${version} libnvinfer-plugin-dev=${version} python-libnvinfer=${version} python3-libnvinfer=${version}
-RUN apt-mark hold libnvinfer7 libnvonnxparsers7 libnvparsers7 libnvinfer-plugin7 libnvinfer-dev libnvonnxparsers-dev libnvparsers-dev libnvinfer-plugin-dev python-libnvinfer python3-libnvinfer
-RUN apt-get install -y libopencv-calib3d-dev libopencv-dev
-
 
 
 ENV HOME /root
