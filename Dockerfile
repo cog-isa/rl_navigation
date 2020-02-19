@@ -226,13 +226,29 @@ RUN locale-gen "en_US.UTF-8"
 # Finish
 RUN echo "source /opt/ros/kinetic/setup.bash" >> /root/.bashrc
 
-RUN cp /usr/lib/x86_64-linux-gnu/libcudnn* /
+
 RUN apt-get install -y python-rospy
 RUN pip -V
 RUN pip install rospkg
 RUN pip install keyboard
-RUN pip isntall transformations
+RUN pip install transformations
+RUN /bin/bash -c "source ~/.bashrc"
 
+RUN cp /usr/lib/x86_64-linux-gnu/libcudnn* /
+WORKDIR /root
+RUN mkdir -p /root/catkin_ws/src
+WORKDIR /root/catkin_ws/src
+RUN /bin/bash -c '. /opt/ros/kinetic/setup.bash; cd /root/catkin_ws/src; catkin_init_workspace'
+WORKDIR /root/catkin_ws
+RUN /bin/bash -c '. /opt/ros/kinetic/setup.bash; cd /root/catkin_ws; catkin_make'
+WORKDIR /root/catkin_ws/src
+RUN git clone https://github.com/CnnDepth/tx2_fcnn_node.git
+WORKDIR /root/catkin_ws/src/tx2_fcnn_node
+RUN git submodule update --init --recursive
+WORKDIR /root/catkin_ws
+RUN /bin/bash -c '. /opt/ros/kinetic/setup.bash; cd /root/catkin_ws; catkin_make --cmake-args -DPATH_TO_TENSORRT_INCLUDE=/usr/lib/x86_64-linux-gnu -DPATH_TO_TENSORRT_LIB=/usr/lib/x86_64-linux-gnu'
+
+WORKDIR /
 # startup
 COPY image /
 
