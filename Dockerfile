@@ -230,7 +230,6 @@ RUN echo "source /opt/ros/kinetic/setup.bash" >> /root/.bashrc
 RUN apt-get install -y python-rospy
 RUN pip -V
 RUN pip install rospkg
-RUN pip install keyboard
 RUN pip install transformations
 RUN /bin/bash -c "source ~/.bashrc"
 
@@ -247,6 +246,84 @@ WORKDIR /root/catkin_ws/src/tx2_fcnn_node
 RUN git submodule update --init --recursive
 WORKDIR /root/catkin_ws
 RUN /bin/bash -c '. /opt/ros/kinetic/setup.bash; cd /root/catkin_ws; catkin_make --cmake-args -DPATH_TO_TENSORRT_INCLUDE=/usr/lib/x86_64-linux-gnu -DPATH_TO_TENSORRT_LIB=/usr/lib/x86_64-linux-gnu'
+#COPY requirements/keyboard /etc/default/keyboard
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get install -y xdotool apt-utils
+RUN apt-get install -y  kmod kbd
+RUN pip install keyboard
+
+WORKDIR /opt/conda/lib
+RUN cp libpython3.7m.so libpython3.6m.so
+RUN cp libpython3.7m.so.1.0 libpython3.6m.so.1.0
+RUN cp libpython3.7m.a libpython3.6m.a
+
+WORKDIR /root
+
+
+
+RUN DIR1=$(pwd) && \
+    MAINDIR=$(pwd)/3rdparty && \
+    mkdir ${MAINDIR} && \
+    cd ${MAINDIR} && \
+    cd ${MAINDIR} && \
+    mkdir eigen3 && \
+    cd eigen3 && \
+    wget http://bitbucket.org/eigen/eigen/get/3.3.5.tar.gz && \
+    tar -xzf 3.3.5.tar.gz && \
+    cd eigen-eigen-b3f3d4950030 && \
+    mkdir build && \
+    cd build && \
+    cmake .. -DCMAKE_INSTALL_PREFIX=${MAINDIR}/eigen3_installed/ && \
+    make install && \
+    cd ${MAINDIR} && \
+    wget https://sourceforge.net/projects/glew/files/glew/2.1.0/glew-2.1.0.zip && \
+    unzip glew-2.1.0.zip && \
+    cd glew-2.1.0/ && \
+    cd build && \
+    cmake ./cmake  -DCMAKE_INSTALL_PREFIX=${MAINDIR}/glew_installed && \
+    make -j4 && \
+    make install && \
+    cd ${MAINDIR} && \
+    #pip install numpy --upgrade
+    rm Pangolin -rf && \
+    git clone https://github.com/stevenlovegrove/Pangolin.git && \
+    cd Pangolin && \
+    mkdir build && \
+    cd build && \
+    cmake .. -DCMAKE_PREFIX_PATH=${MAINDIR}/glew_installed/ -DCMAKE_LIBRARY_PATH=${MAINDIR}/glew_installed/lib/ -DCMAKE_INSTALL_PREFIX=${MAINDIR}/pangolin_installed && \
+    cmake --build . && \
+    cd ${MAINDIR} && \
+    rm ORB_SLAM2 -rf && \
+    rm ORB_SLAM2-PythonBindings -rf && \
+    git clone https://github.com/ducha-aiki/ORB_SLAM2 && \
+    git clone https://github.com/ducha-aiki/ORB_SLAM2-PythonBindings && \
+    cd ${MAINDIR}/ORB_SLAM2 && \
+    sed -i "s,cmake .. -DCMAKE_BUILD_TYPE=Release,cmake .. -DCMAKE_BUILD_TYPE=Release -DEIGEN3_INCLUDE_DIR=${MAINDIR}/eigen3_installed/include/eigen3/ -DCMAKE_INSTALL_PREFIX=${MAINDIR}/ORBSLAM2_installed ,g" build.sh
+    #cp ${MAINDIR}/ORB_SLAM2/Vocabulary/ORBvoc.txt ${DIR1}/data/
+
+RUN /bin/bash -c "source ~/.bashrc"
+RUN rm /opt/conda/lib/libz*
+
+WORKDIR /root
+ENV OpenCV_DIR=/opt/ros/kinetic
+RUN DIR1=$(pwd) && \
+    MAINDIR=$(pwd)/3rdparty && \
+    OpenCV_DIR=/opt/ros/kinetic && \
+    cd ${MAINDIR}/ORB_SLAM2 && \
+    ./build.sh --OpenCV_DIR=/opt/ros/kinetic && \
+    cd build && \
+    make install && \
+    cd ${MAINDIR} && \
+    cd ORB_SLAM2-PythonBindings/src && \
+    ln -s ${MAINDIR}/eigen3_installed/include/eigen3/Eigen Eigen && \
+    cd ${MAINDIR}/ORB_SLAM2-PythonBindings && \
+    mkdir build && \
+    cd build && \
+    CONDA_DIR=$(dirname $(dirname $(which conda))) && \
+    sed -i "s,lib/python3.5/dist-packages,/opt/conda/lib/python3.7/site-packages/,g" ../CMakeLists.txt && \
+    cmake .. -DPYTHON_INCLUDE_DIR=$(python -c "from distutils.sysconfig import get_python_inc; print(get_python_inc())") -DPYTHON_LIBRARY=$(python -c "import distutils.sysconfig as sysconfig; print(sysconfig.get_config_var('LIBDIR'))")/libpython3.6m.so -DPYTHON_EXECUTABLE:FILEPATH=`which python` -DCMAKE_LIBRARY_PATH=${MAINDIR}/ORBSLAM2_installed/lib -DCMAKE_INCLUDE_PATH=${MAINDIR}/ORBSLAM2_installed/include && \
+    make && \
+    make install
 
 WORKDIR /
 # startup
