@@ -1,19 +1,8 @@
 FROM nvidia/cudagl:10.0-devel-ubuntu16.04
+
 #---------------------------------------------------------------------
-# Install CUDNN
+# Install Linux stuff
 #---------------------------------------------------------------------
-
-RUN echo "deb https://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1604/x86_64 /" > /etc/apt/sources.list.d/nvidia-ml.list
-
-LABEL com.nvidia.cudnn.version="7.3.1.20"
-
-RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-    libcudnn7=7.3.1.20-1+cuda10.0 \
-    libcudnn7-dev=7.3.1.20-1+cuda10.0 \
-    && rm -rf /var/lib/apt/lists/*
-
-
-
 ARG SOURCEFORGE=https://sourceforge.net/projects
 ARG TURBOVNC_VERSION=2.1.2
 ARG VIRTUALGL_VERSION=2.5.2
@@ -22,9 +11,6 @@ ARG WEBSOCKIFY_VERSION=0.8.0
 ARG NOVNC_VERSION=1.0.0
 ARG LIBARMADILLO_VERSION=6
 
-#---------------------------------------------------------------------
-# Install Linux stuff
-#---------------------------------------------------------------------
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
     ca-certificates curl wget less sudo lsof git net-tools nano psmisc xz-utils nemo vim net-tools iputils-ping traceroute htop \
     lubuntu-core chromium-browser xterm terminator zenity make cmake gcc libc6-dev \
@@ -35,26 +21,33 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-ins
     libeigen3-dev libsdl1.2-dev libignition-math2-dev libarmadillo-dev libarmadillo${LIBARMADILLO_VERSION} libsdl-image1.2-dev libsdl-dev \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
+#---------------------------------------------------------------------
+# Install CUDNN
+#---------------------------------------------------------------------
+
+RUN echo "deb https://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1604/x86_64 /" > /etc/apt/sources.list.d/nvidia-ml.list
+
+#LABEL com.nvidia.cudnn.version="7.3.1.20"
+
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+    libcudnn7=7.5.0.56-1+cuda10.0 \
+    libcudnn7-dev=7.5.0.56-1+cuda10.0 \
+    && rm -rf /var/lib/apt/lists/*
+
+
 
 ENV LANG=C.UTF-8 LC_ALL=C.UTF-8
-ENV PATH /opt/conda/bin:$PATH
 
 RUN apt-get update
 RUN apt-get install -y software-properties-common
 RUN apt-get update
 RUN add-apt-repository universe
 
-RUN apt-get update && \
-  apt-get install -y software-properties-common
-RUN apt-get update
-
 RUN apt-get install -y build-essential
 RUN apt-get install -y git
 
 
 # tini for subreap                                   
- 
-
 
 RUN apt-get update --fix-missing && \
     apt-get install -y g++ wget bzip2 ca-certificates curl zip unzip libpng-dev \
@@ -74,6 +67,13 @@ RUN curl -o ~/miniconda.sh -O  https://repo.continuum.io/miniconda/Miniconda3-la
     rm ~/miniconda.sh &&\
     /opt/conda/bin/conda install numpy pyyaml scipy ipython mkl mkl-include &&\
     /opt/conda/bin/conda clean -ya
+#RUN python3 -V
+#RUN wget https://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1804/x86_64/nvidia-machine-learning-repo-ubuntu1804_1.0.0-1_amd64.deb
+#RUN dpkg -i nvidia-machine-learning-repo-*.deb
+#RUN apt-get update
+#RUN apt-get install libnvinfer7=7.0.0-1+cuda10.0 libnvonnxparsers7=7.0.0-1+cuda10.0 libnvparsers7=7.0.0-1+cuda10.0 libnvinfer-plugin7=7.0.0-1+cuda10.0 libnvinfer-dev=7.0.0-1+cuda10.0 libnvonnxparsers-dev=7.0.0-1+cuda10.0 libnvparsers-dev=7.0.0-1+cuda10.0 libnvinfer-plugin-dev=7.0.0-1+cuda10.0 python-libnvinfer=7.0.0-1+cuda10.0
+# python3-libnvinfer=7.0.0-1+cuda10.0
+#RUN apt-mark hold libnvinfer7 libnvonnxparsers7 libnvparsers7 libnvinfer-plugin7 libnvinfer-dev libnvonnxparsers-dev libnvparsers-dev libnvinfer-plugin-dev python-libnvinfer python3-libnvinfer
 
     
 
@@ -233,19 +233,7 @@ RUN pip install rospkg
 RUN pip install transformations
 RUN /bin/bash -c "source ~/.bashrc"
 
-RUN cp /usr/lib/x86_64-linux-gnu/libcudnn* /
-WORKDIR /root
-RUN mkdir -p /root/catkin_ws/src
-WORKDIR /root/catkin_ws/src
-RUN /bin/bash -c '. /opt/ros/kinetic/setup.bash; cd /root/catkin_ws/src; catkin_init_workspace'
-WORKDIR /root/catkin_ws
-RUN /bin/bash -c '. /opt/ros/kinetic/setup.bash; cd /root/catkin_ws; catkin_make'
-WORKDIR /root/catkin_ws/src
-RUN git clone https://github.com/CnnDepth/tx2_fcnn_node.git
-WORKDIR /root/catkin_ws/src/tx2_fcnn_node
-RUN git submodule update --init --recursive
-WORKDIR /root/catkin_ws
-RUN /bin/bash -c '. /opt/ros/kinetic/setup.bash; cd /root/catkin_ws; catkin_make --cmake-args -DPATH_TO_TENSORRT_INCLUDE=/usr/lib/x86_64-linux-gnu -DPATH_TO_TENSORRT_LIB=/usr/lib/x86_64-linux-gnu'
+
 #COPY requirements/keyboard /etc/default/keyboard
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get install -y xdotool apt-utils
@@ -326,6 +314,35 @@ RUN DIR1=$(pwd) && \
     make install
 
 WORKDIR /
+
+
+RUN cp /usr/lib/x86_64-linux-gnu/libcudnn* /
+WORKDIR /root
+RUN mkdir -p /root/catkin_ws/src
+WORKDIR /root/catkin_ws/src
+RUN /bin/bash -c '. /opt/ros/kinetic/setup.bash; cd /root/catkin_ws/src; catkin_init_workspace'
+WORKDIR /root/catkin_ws
+RUN /bin/bash -c '. /opt/ros/kinetic/setup.bash; cd /root/catkin_ws; catkin_make'
+WORKDIR /root/catkin_ws/src
+RUN git clone https://github.com/CnnDepth/tx2_fcnn_node.git
+WORKDIR /root/catkin_ws/src/tx2_fcnn_node
+RUN git submodule update --init --recursive
+WORKDIR /root/catkin_ws
+RUN /bin/bash -c '. /opt/ros/kinetic/setup.bash; cd /root/catkin_ws; catkin_make --cmake-args -DPATH_TO_TENSORRT_INCLUDE=/usr/lib/x86_64-linux-gnu -DPATH_TO_TENSORRT_LIB=/usr/lib/x86_64-linux-gnu'
+
+RUN rm /root/catkin_ws/src/tx2_fcnn_node/Thirdparty/fcrn-inference/jetson-utils/XML*
+RUN rm /root/catkin_ws/src/tx2_fcnn_node/launch/cnn_only*
+COPY requirements/cnn_only.launch /root/catkin_ws/src/tx2_fcnn_node/launch
+COPY requirements/habitat_camera_calib.yaml /root/catkin_ws/src/tx2_fcnn_node/calib
+RUN /bin/bash -c '. /opt/ros/kinetic/setup.bash; cd /root/catkin_ws; catkin_make --cmake-args -DBUILD_ENGINE_BUILDER=1; \
+cd /root/catkin_ws/src/tx2_fcnn_node; \
+mkdir engine && cd engine; \
+wget http://pathplanning.ru/public/ECMR-2019/engines/resnet_nonbt_shortcuts_320x240.uff; \
+source /opt/ros/kinetic/setup.bash; \
+source /root/catkin_ws/devel/setup.bash; '
+#rosrun tx2_fcnn_node fcrn_engine_builder --uff=/root/catkin_ws/src/tx2_fcnn_node/engine/resnet_nonbt_shortcuts_320x240.uff --uffInput=tf/Placeholder   --output=tf/Reshape --height=240 --width=320 --engine=./test_engine.trt --fp16
+
+
 # startup
 COPY image /
 
