@@ -310,17 +310,19 @@ def main():
     parser.add_argument("--preset-trajectory", type=bool, default=False)
     args = parser.parse_args()
     # Now define the config for the sensor
-    config = habitat.get_config(config_paths="../habitat-api/configs/tasks/pointnav_rgbd.yaml")
+    config = habitat.get_config(config_paths="/data/challenge_pointnav2020.local.rgbd.yaml")
     config.defrost()
     config.SIMULATOR.RGB_SENSOR.HEIGHT = 240
     config.SIMULATOR.RGB_SENSOR.WIDTH = 320
     config.SIMULATOR.DEPTH_SENSOR.HEIGHT = 240
     config.SIMULATOR.DEPTH_SENSOR.WIDTH = 320
+    config.DATASET.DATA_PATH = '/data/pointgoal_gibson.{split}.json.gz'
     config.TASK.MEASUREMENTS.append("TOP_DOWN_MAP")
     config.TASK.SENSORS.append("HEADING_SENSOR")
     config.TASK.SENSORS.append("GPS_SENSOR")
     config.TASK.SENSORS.append("COMPASS_SENSOR")
-    config.SIMULATOR.SCENE = 'data/scene_datasets/gibson/Aldrich.glb'
+    config.DATASET.SCENES_DIR = '/data'
+    config.SIMULATOR.SCENE = '/data/gibson/Aldrich.glb'
     config.freeze()
     max_depth = config.SIMULATOR.DEPTH_SENSOR.MAX_DEPTH
     print(args.create_map)
