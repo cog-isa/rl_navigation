@@ -1,15 +1,31 @@
-FROM nvidia/cudagl:10.0-devel-ubuntu16.04
+FROM fairembodied/habitat-challenge:2020
 
+RUN apt-get update && apt-get install -y cuda-toolkit-10.1
 #---------------------------------------------------------------------
-# Install Linux stuff
+# Install TensorRT5 for Ubuntu 16.04 and CUDA 10.0 (no auto download possible rn)
 #---------------------------------------------------------------------
-ARG SOURCEFORGE=https://sourceforge.net/projects
-ARG TURBOVNC_VERSION=2.1.2
-ARG VIRTUALGL_VERSION=2.5.2
-ARG LIBJPEG_VERSION=1.5.2
-ARG WEBSOCKIFY_VERSION=0.8.0
-ARG NOVNC_VERSION=1.0.0
-ARG LIBARMADILLO_VERSION=6
+WORKDIR /
+RUN apt-get update
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --allow-downgrades --no-install-recommends \
+    libcudnn7=7.6.5.32-1+cuda10.1 \
+    libcudnn7-dev=7.6.5.32-1+cuda10.1 \
+    libcublas10=10.1.0.105-1 \
+    libcublas-dev=10.1.0.105-1 \
+    && rm -rf /var/lib/apt/lists/*
+RUN apt-mark hold libcudnn7 libcudnn7-dev
+RUN apt-get update
+
+RUN version="6.0.1-1+cuda10.1" && \
+apt-get install -y libnvinfer6=${version} libnvonnxparsers6=${version} libnvparsers6=${version} libnvinfer-plugin6=${version} libnvinfer-dev=${version} libnvonnxparsers-dev=${version} libnvparsers-dev=${version} libnvinfer-plugin-dev=${version} python-libnvinfer=${version} python3-libnvinfer=${version}
+COPY requirements/nv-tensorrt-repo-ubuntu1804-cuda10.1-trt6.0.1.5-ga-20190913_1-1_amd64.deb /tensorrt.deb
+RUN dpkg -i tensorrt.deb
+RUN apt-key add /var/nv-tensorrt-repo-cuda10.1-trt6.0.1.5-ga-20190913/7fa2af80.pub
+RUN apt-get update
+RUN apt policy tensorrt
+RUN apt-get install -y tensorrt=6.0.1.5-1+cuda10.1
+
+ENV LANG=C.UTF-8 LC_ALL=C.UTF-8
+ENV PATH /opt/conda/envs/habitat/bin:$PATH    
 
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
     ca-certificates curl wget less sudo lsof git net-tools nano psmisc xz-utils nemo vim net-tools iputils-ping traceroute htop \
@@ -17,138 +33,27 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-ins
     x11-xkb-utils xauth xfonts-base xkb-data \
     mesa-utils xvfb libgl1-mesa-dri libgl1-mesa-glx libglib2.0-0 libxext6 libsm6 libxrender1 \
     libglu1 libglu1:i386 libxv1 libxv1:i386 \
-    python python-numpy libpython-dev libsuitesparse-dev libgtest-dev \
-    libeigen3-dev libsdl1.2-dev libignition-math2-dev libarmadillo-dev libarmadillo${LIBARMADILLO_VERSION} libsdl-image1.2-dev libsdl-dev \
+    libpython-dev libsuitesparse-dev libgtest-dev \
+    libeigen3-dev libsdl1.2-dev libignition-math2-dev libarmadillo-dev libsdl-image1.2-dev libsdl-dev \
+    software-properties-common supervisor vim-tiny dbus-x11 x11-utils alsa-utils \
+    lxde x11vnc gtk2-engines-murrine gnome-themes-standard gtk2-engines-pixbuf gtk2-engines-murrine\
+    firefox libxmu-dev \
+    libssl-dev:i386 libxext-dev x11proto-gl-dev \
+    ninja-build meson autoconf libtool \
+    zlib1g-dev libjpeg-dev ffmpeg xorg-dev python-opengl python3-opengl libsdl2-dev swig \
+    libglew-dev libboost-dev libboost-thread-dev libboost-filesystem-dev libpython2.7-dev \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-#---------------------------------------------------------------------
-# Install CUDNN
-#---------------------------------------------------------------------
+RUN /bin/bash -c ". activate habitat; conda install -y pthread-stubs numpy pyyaml scipy ipython mkl mkl-include"
+WORKDIR /
 
-RUN echo "deb https://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1604/x86_64 /" > /etc/apt/sources.list.d/nvidia-ml.list
-
-#LABEL com.nvidia.cudnn.version="7.3.1.20"
-
-RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-    libcudnn7=7.5.0.56-1+cuda10.0 \
-    libcudnn7-dev=7.5.0.56-1+cuda10.0 \
-    && rm -rf /var/lib/apt/lists/*
-
-
-
-ENV LANG=C.UTF-8 LC_ALL=C.UTF-8
-
-RUN apt-get update
-RUN apt-get install -y software-properties-common
-RUN apt-get update
-RUN add-apt-repository universe
-
-RUN apt-get install -y build-essential
-RUN apt-get install -y git
-
-
-# tini for subreap                                   
-
-RUN apt-get update --fix-missing && \
-    apt-get install -y g++ wget bzip2 ca-certificates curl zip unzip libpng-dev \
-    libglfw3-dev \
-    libglm-dev \
-    libx11-dev \
-    libomp-dev \
-    libegl1-mesa-dev \
-    pkg-config && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
-
-ENV PATH /opt/conda/bin:$PATH
-RUN curl -o ~/miniconda.sh -O  https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh  &&\
-    chmod +x ~/miniconda.sh &&\
-    ~/miniconda.sh -b -p /opt/conda &&\
-    rm ~/miniconda.sh &&\
-    /opt/conda/bin/conda install numpy pyyaml scipy ipython mkl mkl-include &&\
-    /opt/conda/bin/conda clean -ya
-#RUN python3 -V
-#RUN wget https://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu1804/x86_64/nvidia-machine-learning-repo-ubuntu1804_1.0.0-1_amd64.deb
-#RUN dpkg -i nvidia-machine-learning-repo-*.deb
-#RUN apt-get update
-#RUN apt-get install libnvinfer7=7.0.0-1+cuda10.0 libnvonnxparsers7=7.0.0-1+cuda10.0 libnvparsers7=7.0.0-1+cuda10.0 libnvinfer-plugin7=7.0.0-1+cuda10.0 libnvinfer-dev=7.0.0-1+cuda10.0 libnvonnxparsers-dev=7.0.0-1+cuda10.0 libnvparsers-dev=7.0.0-1+cuda10.0 libnvinfer-plugin-dev=7.0.0-1+cuda10.0 python-libnvinfer=7.0.0-1+cuda10.0
-# python3-libnvinfer=7.0.0-1+cuda10.0
-#RUN apt-mark hold libnvinfer7 libnvonnxparsers7 libnvparsers7 libnvinfer-plugin7 libnvinfer-dev libnvonnxparsers-dev libnvparsers-dev libnvinfer-plugin-dev python-libnvinfer python3-libnvinfer
-
-    
-
-RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-        software-properties-common \
-        supervisor \
-        sudo \
-        vim-tiny \
-        net-tools \ 
-        xz-utils \
-        dbus-x11 x11-utils alsa-utils \
-        mesa-utils libgl1-mesa-dri\
-        lxde x11vnc xvfb \
-        nano \
-        gtk2-engines-murrine gnome-themes-standard gtk2-engines-pixbuf gtk2-engines-murrine\
-        firefox \
-        libxmu-dev  \
-        libxi-dev \
-    && apt-get -y autoclean \
-    && apt-get -y autoremove \
-    && rm -rf /var/lib/apt/lists/*
-
-    
 ARG TINI_VERSION=v0.9.0
 ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /bin/tini
 RUN chmod +x /bin/tini
 # set default screen to 1 (this is crucial for gym's rendering)
 ENV DISPLAY=:1
-WORKDIR /       
+WORKDIR /      
 
-
-WORKDIR /
-RUN dpkg --add-architecture i386
-RUN apt-get update
-RUN apt-get install -y libssl-dev:i386 libxext-dev x11proto-gl-dev 
-RUN apt-get -y install ninja-build meson autoconf libtool libxext-dev
-
-
-
-RUN apt-get update && apt-get install -y \
-        git vim \
-        zlib1g-dev libjpeg-dev xvfb ffmpeg xorg-dev python-opengl python3-opengl libboost-all-dev libsdl2-dev swig\
-    && rm -rf /var/lib/apt/lists/*
-
-RUN wget https://github.com/Kitware/CMake/releases/download/v3.13.4/cmake-3.13.4-Linux-x86_64.sh
-RUN mkdir /opt/cmake
-RUN sh /cmake-3.13.4-Linux-x86_64.sh --prefix=/opt/cmake --skip-license
-RUN ln -s /opt/cmake/bin/cmake /usr/local/bin/cmake
-RUN cmake --version
-
-
-
-WORKDIR /
-RUN git clone --branch master https://github.com/facebookresearch/habitat-sim.git
-WORKDIR /habitat-sim
-RUN python setup.py install --headless
-
-WORKDIR /
-RUN git clone https://github.com/facebookresearch/habitat-api.git
-WORKDIR /habitat-api
-RUN pip install -r requirements.txt
-RUN python setup.py develop --all
-
-WORKDIR /
-# vnc port
-EXPOSE 5900
-# jupyterlab port
-EXPOSE 8888
-# tensorboard (if any)
-EXPOSE 6006
-
-#RUN apt-get update && apt-get install -y cmake libopenmpi-dev zlib1g-dev
-#RUN LDFLAGS=-L /lib/x86_64-linux-gnu/libpthread.so.0 cmake ..
-
-# install jupyterlab
 RUN pip install jupyterlab
 RUN pip install torch torchvision
 RUN pip install tensorflow-gpu==1.14
@@ -160,41 +65,14 @@ RUN pip install scikit-fmm
 RUN pip install imageio
 RUN pip install scikit-image
 RUN pip install --no-cache-dir Cython
+RUN pip install keyboard
+ 
 
-#---------------------------------------------------------------------
-# Install TensorRT5 for Ubuntu 16.04 and CUDA 10.0 (no auto download possible rn)
-#---------------------------------------------------------------------
-WORKDIR /
-COPY requirements/tensorRT5_1604_CUDA10.deb tensorrt.deb
-RUN dpkg -i tensorrt.deb
-RUN apt-key add /var/nv-tensorrt-repo-cuda10.0-trt5.1.5.0-ga-20190427/7fa2af80.pub
-RUN apt-get update
-RUN apt-get install -y libnvinfer5=5.1.5-1+cuda10.0 libnvinfer-dev=5.1.5-1+cuda10.0 python3-libnvinfer=5.1.5-1+cuda10.0 python3-libnvinfer-dev=5.1.5-1+cuda10.0 uff-converter-tf=5.1.5-1+cuda10.0
-RUN apt-get install -y tensorrt    
-
-#---------------------------------------------------------------------
-# Install ROS
-#---------------------------------------------------------------------
 RUN sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list'
 RUN apt-key adv --keyserver 'hkp://keyserver.ubuntu.com:80' --recv-key C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654
 
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
-    ros-kinetic-desktop-full \
-    ros-kinetic-tf2-sensor-msgs \
-    ros-kinetic-geographic-msgs \
-    ros-kinetic-move-base-msgs \
-    ros-kinetic-ackermann-msgs \
-    ros-kinetic-unique-id \
-    ros-kinetic-fake-localization \
-    ros-kinetic-joy \
-    ros-kinetic-imu-tools \
-    ros-kinetic-robot-pose-ekf \
-    ros-kinetic-grpc \
-    ros-kinetic-pcl-ros \
-    ros-kinetic-pcl-conversions \
-    ros-kinetic-controller-manager \
-    ros-kinetic-joint-state-controller \
-    ros-kinetic-effort-controllers \
+    ros-melodic-desktop-full \
     && apt-get clean
 
 RUN rosdep init
@@ -203,7 +81,8 @@ RUN apt install -y python-rosinstall \
          python-rosinstall-generator \ 
          python-wstool \
          build-essential
-RUN    echo "source /opt/ros/kinetic/setup.bash" >> ~/.bashrc
+         
+RUN echo "source /opt/ros/melodic/setup.bash" >> ~/.bashrc
 RUN /bin/bash -c "source ~/.bashrc"
 RUN apt-get install -y libqt4-dev \
          qt4-dev-tools \ 
@@ -223,22 +102,24 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y \
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -y locales
 RUN locale-gen "en_US.UTF-8"
 
-# Finish
-RUN echo "source /opt/ros/kinetic/setup.bash" >> /root/.bashrc
-
-
-RUN apt-get install -y python-rospy
-RUN pip -V
 RUN pip install rospkg
 RUN pip install transformations
 RUN /bin/bash -c "source ~/.bashrc"
 
+RUN cp /usr/lib/x86_64-linux-gnu/libcudnn* /
+WORKDIR /root
+RUN mkdir -p /root/catkin_ws/src
+WORKDIR /root/catkin_ws/src
+RUN /bin/bash -c '. /opt/ros/melodic/setup.bash; cd /root/catkin_ws/src; catkin_init_workspace'
+WORKDIR /root/catkin_ws
+RUN /bin/bash -c '. /opt/ros/melodic/setup.bash; cd /root/catkin_ws; catkin_make'
+WORKDIR /root/catkin_ws/src
+RUN git clone https://github.com/CnnDepth/tx2_fcnn_node.git
+WORKDIR /root/catkin_ws/src/tx2_fcnn_node
+RUN git submodule update --init --recursive
+WORKDIR /root/catkin_ws
 
-#COPY requirements/keyboard /etc/default/keyboard
-ENV DEBIAN_FRONTEND=noninteractive
-RUN apt-get install -y xdotool apt-utils
-RUN apt-get install -y  kmod kbd
-RUN pip install keyboard
+WORKDIR /root
 
 WORKDIR /opt/conda/lib
 RUN cp libpython3.7m.so libpython3.6m.so
@@ -247,7 +128,7 @@ RUN cp libpython3.7m.a libpython3.6m.a
 
 WORKDIR /root
 
-
+RUN rm /opt/conda/envs/habitat/lib/libz*
 
 RUN DIR1=$(pwd) && \
     MAINDIR=$(pwd)/3rdparty && \
@@ -272,7 +153,6 @@ RUN DIR1=$(pwd) && \
     make -j4 && \
     make install && \
     cd ${MAINDIR} && \
-    #pip install numpy --upgrade
     rm Pangolin -rf && \
     git clone https://github.com/stevenlovegrove/Pangolin.git && \
     cd Pangolin && \
@@ -290,15 +170,12 @@ RUN DIR1=$(pwd) && \
     #cp ${MAINDIR}/ORB_SLAM2/Vocabulary/ORBvoc.txt ${DIR1}/data/
 
 RUN /bin/bash -c "source ~/.bashrc"
-RUN rm /opt/conda/lib/libz*
 
 WORKDIR /root
-ENV OpenCV_DIR=/opt/ros/kinetic
 RUN DIR1=$(pwd) && \
     MAINDIR=$(pwd)/3rdparty && \
-    OpenCV_DIR=/opt/ros/kinetic && \
     cd ${MAINDIR}/ORB_SLAM2 && \
-    ./build.sh --OpenCV_DIR=/opt/ros/kinetic && \
+    ./build.sh && \
     cd build && \
     make install && \
     cd ${MAINDIR} && \
@@ -308,45 +185,60 @@ RUN DIR1=$(pwd) && \
     mkdir build && \
     cd build && \
     CONDA_DIR=$(dirname $(dirname $(which conda))) && \
-    sed -i "s,lib/python3.5/dist-packages,/opt/conda/lib/python3.7/site-packages/,g" ../CMakeLists.txt && \
+    sed -i "s,lib/python3.5/dist-packages,/opt/conda/envs/habitat/lib/python3.6/site-packages/,g" ../CMakeLists.txt && \
+    sed -i "s,python-py35,python-py36,g" ../CMakeLists.txt && \
     cmake .. -DPYTHON_INCLUDE_DIR=$(python -c "from distutils.sysconfig import get_python_inc; print(get_python_inc())") -DPYTHON_LIBRARY=$(python -c "import distutils.sysconfig as sysconfig; print(sysconfig.get_config_var('LIBDIR'))")/libpython3.6m.so -DPYTHON_EXECUTABLE:FILEPATH=`which python` -DCMAKE_LIBRARY_PATH=${MAINDIR}/ORBSLAM2_installed/lib -DCMAKE_INCLUDE_PATH=${MAINDIR}/ORBSLAM2_installed/include && \
-    make && \
+    make && \                                                                                                                                                                                                                                                                               
     make install
 
-WORKDIR /
+RUN cp /root/3rdparty/ORB_SLAM2/Thirdparty/DBoW2/lib/libDBoW2.so /opt/conda/envs/habitat/lib/libDBoW2.so
+RUN cp /root/3rdparty/ORB_SLAM2/Thirdparty/g2o/lib/libg2o.so /opt/conda/envs/habitat/lib/libg2o.so
 
+RUN ln -s /usr/local/cuda-10.1/ /usr/local/cuda
+RUN cp /usr/lib/x86_64-linux-gnu/libcublas.so /usr/local/cuda-10.1/lib64/
 
-RUN cp /usr/lib/x86_64-linux-gnu/libcudnn* /
-WORKDIR /root
-RUN mkdir -p /root/catkin_ws/src
-WORKDIR /root/catkin_ws/src
-RUN /bin/bash -c '. /opt/ros/kinetic/setup.bash; cd /root/catkin_ws/src; catkin_init_workspace'
-WORKDIR /root/catkin_ws
-RUN /bin/bash -c '. /opt/ros/kinetic/setup.bash; cd /root/catkin_ws; catkin_make'
-WORKDIR /root/catkin_ws/src
-RUN git clone https://github.com/CnnDepth/tx2_fcnn_node.git
-WORKDIR /root/catkin_ws/src/tx2_fcnn_node
-RUN git submodule update --init --recursive
-WORKDIR /root/catkin_ws
-RUN /bin/bash -c '. /opt/ros/kinetic/setup.bash; cd /root/catkin_ws; catkin_make --cmake-args -DPATH_TO_TENSORRT_INCLUDE=/usr/lib/x86_64-linux-gnu -DPATH_TO_TENSORRT_LIB=/usr/lib/x86_64-linux-gnu'
+RUN /bin/bash -c '. /opt/ros/melodic/setup.bash; cd /root/catkin_ws; catkin_make --cmake-args -DPATH_TO_TENSORRT_INCLUDE=/usr/lib/x86_64-linux-gnu -DPATH_TO_TENSORRT_LIB=/usr/lib/x86_64-linux-gnu'
 
-RUN rm /root/catkin_ws/src/tx2_fcnn_node/Thirdparty/fcrn-inference/jetson-utils/XML*
+RUN cp /usr/lib/x86_64-linux-gnu/libcudnn* /    
+
+#RUN rm /root/catkin_ws/src/tx2_fcnn_node/Thirdparty/fcrn-inference/jetson-utils/XML*
 RUN rm /root/catkin_ws/src/tx2_fcnn_node/launch/cnn_only*
 COPY requirements/cnn_only.launch /root/catkin_ws/src/tx2_fcnn_node/launch
+COPY requirements/habitat_rtabmap.launch /root/catkin_ws/src/tx2_fcnn_node/launch
 COPY requirements/habitat_camera_calib.yaml /root/catkin_ws/src/tx2_fcnn_node/calib
-RUN /bin/bash -c '. /opt/ros/kinetic/setup.bash; cd /root/catkin_ws; catkin_make --cmake-args -DBUILD_ENGINE_BUILDER=1; \
+RUN /bin/bash -c '. /opt/ros/melodic/setup.bash; cd /root/catkin_ws; catkin_make --cmake-args -DBUILD_ENGINE_BUILDER=1; \
 cd /root/catkin_ws/src/tx2_fcnn_node; \
 mkdir engine && cd engine; \
 wget http://pathplanning.ru/public/ECMR-2019/engines/resnet_nonbt_shortcuts_320x240.uff; \
-source /opt/ros/kinetic/setup.bash; \
+source /opt/ros/melodic/setup.bash; \
 source /root/catkin_ws/devel/setup.bash; '
+RUN echo "source /root/catkin_ws/devel/setup.bash" >> /root/.bashrc
 #rosrun tx2_fcnn_node fcrn_engine_builder --uff=/root/catkin_ws/src/tx2_fcnn_node/engine/resnet_nonbt_shortcuts_320x240.uff --uffInput=tf/Placeholder   --output=tf/Reshape --height=240 --width=320 --engine=./test_engine.trt --fp16
+#cp /test_engine.trt /root/catkin_ws/src/tx2_fcnn_node/engine/
+#cd /root/catkin_ws; roslaunch tx2_fcnn_node habitat_rtabmap.launch
+#export PYTHONPATH=/opt/conda/bin/python
+#machine_ip=(`hostname -I`)
+#export ROS_IP=${machine_ip[0]}
+#rostopic list
+#rostopic echo /depth/image
+RUN apt install -y ros-melodic-rtabmap-ros
+
+ENV CHALLENGE_CONFIG_FILE=/habitat-challenge-data/challenge_pointnav2020.local.rgbd.yaml
+ADD agent.py /agent.py
+ADD submission.sh /submission.sh
 
 
+# vnc port
+EXPOSE 5900
+# jupyterlab port
+EXPOSE 8888
+# tensorboard (if any)
+EXPOSE 6006
+# ros (rviz)
+EXPOSE 11311
 # startup
 COPY image /
-
-
+COPY habitat-challenge-data /data
 ENV HOME /root
 ENV SHELL /bin/bash
 
@@ -356,6 +248,5 @@ ENV JUPYTER_TOKEN ""
 
 WORKDIR /
 # services like lxde, xvfb, x11vnc, jupyterlab will be started
-
 
 ENTRYPOINT ["/startup.sh"]
