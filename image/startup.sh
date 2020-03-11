@@ -4,7 +4,7 @@
 
 #export WANDB_NAME=LUNAR_sweep_$vnc_port+_$jup_port
 
-sed -i "s/1024x768/800x600/" /usr/local/bin/xvfb.sh
+sed -i "s/1920x1080/1920x1080/" /usr/local/bin/xvfb.sh
 
 # some configurations for LXDE
 mkdir -p /root/.config/pcmanfm/LXDE/

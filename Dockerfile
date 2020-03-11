@@ -112,7 +112,7 @@ RUN mkdir -p /root/catkin_ws/src
 WORKDIR /root/catkin_ws/src
 RUN /bin/bash -c '. /opt/ros/melodic/setup.bash; cd /root/catkin_ws/src; catkin_init_workspace'
 WORKDIR /root/catkin_ws
-RUN /bin/bash -c '. /opt/ros/melodic/setup.bash; cd /root/catkin_ws; catkin_make'
+RUN /bin/bash -c '. /opt/ros/melodic/setup.bash; cd /root/catkin_ws; catkin_make -DPYTHON_EXECUTABLE=/opt/conda/envs/habitat/bin/python3 -DPYTHON_INCLUDE_DIR=/opt/conda/envs/habitat/include/python3.6m -DPYTHON_LIBRARY=/opt/conda/envs/habitat/lib/libpython3.6m.so'
 WORKDIR /root/catkin_ws/src
 RUN git clone https://github.com/CnnDepth/tx2_fcnn_node.git
 WORKDIR /root/catkin_ws/src/tx2_fcnn_node
@@ -216,11 +216,22 @@ RUN echo "source /root/catkin_ws/devel/setup.bash" >> /root/.bashrc
 #rosrun tx2_fcnn_node fcrn_engine_builder --uff=/root/catkin_ws/src/tx2_fcnn_node/engine/resnet_nonbt_shortcuts_320x240.uff --uffInput=tf/Placeholder   --output=tf/Reshape --height=240 --width=320 --engine=./test_engine.trt --fp16
 #cp /test_engine.trt /root/catkin_ws/src/tx2_fcnn_node/engine/
 #cd /root/catkin_ws; roslaunch tx2_fcnn_node habitat_rtabmap.launch
+
 #export PYTHONPATH=/opt/conda/bin/python
 #machine_ip=(`hostname -I`)
 #export ROS_IP=${machine_ip[0]}
 #rostopic list
 #rostopic echo /depth/image
+
+
+
+#rtabmap-databaseViewer ~/.ros/rtabmap.db
+#roslaunch rtabmap_ros rtabmap.launch localization:=true rviz:=true
+#rosbag info 2020-03-10-11-59-07.bag 
+#rosbag record -a
+
+
+
 RUN apt install -y ros-melodic-rtabmap-ros
 
 ENV CHALLENGE_CONFIG_FILE=/habitat-challenge-data/challenge_pointnav2020.local.rgbd.yaml

@@ -1,6 +1,6 @@
 import sys
 import os
-sys.path.append('/opt/ros/kinetic/lib/python2.7/dist-packages')
+#sys.path.append('/opt/ros/kinetic/lib/python2.7/dist-packages')
 from cv_bridge import CvBridge
 import rospy
 from sensor_msgs.msg import Image, CameraInfo
@@ -84,7 +84,13 @@ class AgentPositionSensor(habitat.Sensor):
     ):
         sensor_states = self._sim.get_agent_state().sensor_states
         return (sensor_states['rgb'].position, sensor_states['rgb'].rotation)
-
+    
+    
+class dotdict(dict):
+    """dot.notation access to dictionary attributes"""
+    __getattr__ = dict.get
+    __setattr__ = dict.__setitem__
+    __delattr__ = dict.__delitem__
 
 class KeyboardAgent(habitat.Agent):
     def __init__(self, 
@@ -137,6 +143,7 @@ class KeyboardAgent(habitat.Agent):
         eps = 1e-5
         if cur_time - self.slam_update_time > 30:
             self.slam_start_time = cur_time
+            print(self.trajectory)
             start_orientation = self.trajectory[-1].pose.orientation
             start_position = self.trajectory[-1].pose.position
             x_angle, z_angle, y_angle = tf.euler_from_quaternion([start_orientation.x, start_orientation.y, start_orientation.z, start_orientation.w])
@@ -195,7 +202,6 @@ class KeyboardAgent(habitat.Agent):
         print('Source position:', y, z, x)
         print('Source quat:', cur_orientation.x, cur_orientation.y, cur_orientation.z, cur_orientation.w)
         print('Euler angles:', cur_x_angle, cur_y_angle, cur_z_angle)
-        #print('After tf:', tf.quaternion_from_euler(cur_x_angle, cur_y_angle, cur_z_angle))
         if self.publish_odom:
             self.slam_update_time = start_time.secs + 1e-9 * start_time.nsecs
             if not self.is_started:
@@ -252,14 +258,12 @@ class KeyboardAgent(habitat.Agent):
             self.depths.append(observations['depth'])
             cur_time = rospy.Time.now()
             self.timestamps.append(cur_time.secs + 1e-9 * cur_time.nsecs)
-        #self.positions.append(observations['agent_position'][0])
-        #quaternion = observations['agent_position'][1]
-        #rotation_matrix = [quaternion.w, quaternion.x, quaternion.y, quaternion.z]
-        #self.rotations.append(rotation_matrix)
         self.publish_rgb(observations['rgb'])
         self.publish_depth(observations['depth'])
         self.publish_camera_info()
-        #self.publish_true_path([np.hstack((observations['gps'],[0]))[[0,2,1]]]+[observations['compass']], self.publish_odom)
+        #quaternion = tf.transformations.quaternion_from_euler(0, 0, observations['compass'])
+        #cur_orientation = dotdict({'x':quaternion[0],'y':quaternion[1],'z':quaternion[2],'w':quaternion[3]})
+        #self.publish_true_path([np.hstack((observations['gps'],[0]))[[0,2,1]]]+[cur_orientation], self.publish_odom)
         # receive command from keyboard and move
         actions = self.get_actions_from_keyboard()
         start_time_seconds = start_time.secs + start_time.nsecs * 1e-9
@@ -300,6 +304,18 @@ def build_pointcloud(sim, discretization=0.05, grid_size=500, num_samples=20000)
                 pointcloud.add((x_, y_, z_))
     return np.array(list(pointcloud))
 
+class SimpleRLEnv(habitat.RLEnv):
+    def get_reward_range(self):
+        return [-1, 1]
+
+    def get_reward(self, observations):
+        return 0
+
+    def get_done(self, observations):
+        return self.habitat_env.episode_over
+
+    def get_info(self, observations):
+        return self.habitat_env.get_metrics()
 
 def main():
     parser = argparse.ArgumentParser()
@@ -317,10 +333,13 @@ def main():
     config.SIMULATOR.DEPTH_SENSOR.HEIGHT = 240
     config.SIMULATOR.DEPTH_SENSOR.WIDTH = 320
     config.DATASET.DATA_PATH = '/data/pointgoal_gibson.{split}.json.gz'
-    config.TASK.MEASUREMENTS.append("TOP_DOWN_MAP")
-    config.TASK.SENSORS.append("HEADING_SENSOR")
-    config.TASK.SENSORS.append("GPS_SENSOR")
-    config.TASK.SENSORS.append("COMPASS_SENSOR")
+    #config.TASK.MEASUREMENTS.append("TOP_DOWN_MAP")
+    #config.TASK.SENSORS.append("HEADING_SENSOR")
+    config.SIMULATOR.TURN_ANGLE = 0.5
+    config.ENVIRONMENT.MAX_EPISODE_STEPS = 100000
+    config.TASK.TOP_DOWN_MAP.MAX_EPISODE_STEPS = 100000
+    #config.TASK.SENSORS.append("GPS_SENSOR")
+    #config.TASK.SENSORS.append("COMPASS_SENSOR")
     config.DATASET.SCENES_DIR = '/data'
     config.SIMULATOR.SCENE = '/data/gibson/Aldrich.glb'
     config.freeze()
@@ -328,7 +347,8 @@ def main():
     print(args.create_map)
 
     agent = KeyboardAgent(args.save_observations)
-    env = habitat.Env(config=config)
+    env = SimpleRLEnv(config=config)
+    done = False
     if args.create_map:
         print('create map')
         top_down_map = maps.get_topdown_map(env.sim, map_resolution=(5000, 5000))
@@ -352,9 +372,9 @@ def main():
         imsave('top_down_map.png', top_down_map)
     observations = env.reset()
     if not args.preset_trajectory:
-        for _ in range(250):
+        while not done:
             action = agent.act(observations)
-            observations = env.step(action)
+            observations, rew, done, info = env.step(action)
     else:
         fin = open('actions.txt', 'r')
         actions = [int(x) for x in fin.readlines()]

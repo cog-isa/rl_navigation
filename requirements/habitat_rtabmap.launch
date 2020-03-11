@@ -1,9 +1,11 @@
 <launch>
 
   <node pkg="rtabmap_ros" type="rgbd_odometry" name="rgb_odometry" args="--delete_db_on_start">
-    <param name="Vis/FeatureType" value="2"/>
-    <param name="Vis/MaxFeatures" value="2000"/>
-    <param name="Vis/MinInliers" value="20"/>
+    <param name="Vis/FeatureType" value="8"/>
+    <param name="Vis/MaxFeatures" value="5000"/>
+    <param name="Vis/MinInliers" value="15"/>
+    <param name="Vis/EstimationType" value="1"/>
+    <param name="Reg/Force3DoF" value="true"/>
     <remap from="/rgb/image" to="/habitat/rgb/image"/>
     <remap from="/depth/image" to="/habitat/depth/image"/>
     <remap from="/rgb/camera_info" to="/habitat/rgb/camera_info"/>
@@ -15,13 +17,21 @@
   <node pkg="tf" type="static_transform_publisher" name="static_transform_publisher_scan" args="0 0 0 -1.5707963267948966 0 -1.5707963267948966 base_link base_scan 100">
   </node>
   
-    <node pkg="rtabmap_ros" type="rtabmap" name="rtabmap">
+    <node pkg="rtabmap_ros" type="rtabmap" name="rtabmap" args="--delete_db_on_start">
+    <param name="queue_size" value="100"/>
     <param name="RGBD/LinearUpdate" value="0"/>
     <param name="RGBD/AngularUpdate" value="0"/>
-    <param name="Rtabmap/DetectionRate" value="5"/>
-    <param name="Rtabmap/MemoryThr" value="100"/>
+    <param name="Rtabmap/DetectionRate" value="15"/>
+    <param name="Rtabmap/MemoryThr" value="0"/>
     <param name="Kp/DetectorStrategy" value="2"/>
-    <param name="Kp/MaxFeatures" value="2000"/>
+    <param name="Kp/MaxFeatures" value="5000"/>
+    <param name="Grid/RayTracing" value="true"/>
+    <param name="Vis/MinInliers" value="15"/>
+    <param name="Vis/EstimationType" value="1"/>
+    <param name="Reg/Force3DoF" value="true"/>
+    <param name="Grid/MaxObstacleHeight" value="0.8"/>
+    <param name="Rtabmap/LoopThr" value="0.5"/>
+    <param name="queue_size" value="100"/> 
     <remap from="/rgb/image" to="/habitat/rgb/image"/>
     <remap from="/depth/image" to="/habitat/depth/image"/>
     <remap from="/rgb/camera_info" to="/habitat/rgb/camera_info"/>
