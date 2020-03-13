@@ -67,58 +67,6 @@ RUN pip install scikit-image
 RUN pip install --no-cache-dir Cython
 RUN pip install keyboard
  
-
-RUN sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list'
-RUN apt-key adv --keyserver 'hkp://keyserver.ubuntu.com:80' --recv-key C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654
-
-RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
-    ros-melodic-desktop-full \
-    && apt-get clean
-
-RUN rosdep init
-RUN rosdep update
-RUN apt install -y python-rosinstall \
-         python-rosinstall-generator \ 
-         python-wstool \
-         build-essential
-         
-RUN echo "source /opt/ros/melodic/setup.bash" >> ~/.bashrc
-RUN /bin/bash -c "source ~/.bashrc"
-RUN apt-get install -y libqt4-dev \
-         qt4-dev-tools \ 
-         libglew-dev \ 
-         glew-utils \ 
-         libgstreamer1.0-dev \ 
-         libgstreamer-plugins-base1.0-dev \ 
-         libglib2.0-dev
-
-# catkin build tools
-RUN DEBIAN_FRONTEND=noninteractive apt-get install -y \
-    python-pyproj \
-    python-catkin-tools \
-    && apt-get clean
-
-#Fix locale (UTF8) issue https://askubuntu.com/questions/162391/how-do-i-fix-my-locale-issue
-RUN DEBIAN_FRONTEND=noninteractive apt-get install -y locales
-RUN locale-gen "en_US.UTF-8"
-
-RUN pip install rospkg
-RUN pip install transformations
-RUN /bin/bash -c "source ~/.bashrc"
-
-RUN cp /usr/lib/x86_64-linux-gnu/libcudnn* /
-WORKDIR /root
-RUN mkdir -p /root/catkin_ws/src
-WORKDIR /root/catkin_ws/src
-RUN /bin/bash -c '. /opt/ros/melodic/setup.bash; cd /root/catkin_ws/src; catkin_init_workspace'
-WORKDIR /root/catkin_ws
-RUN /bin/bash -c '. /opt/ros/melodic/setup.bash; cd /root/catkin_ws; catkin_make -DPYTHON_EXECUTABLE=/opt/conda/envs/habitat/bin/python3 -DPYTHON_INCLUDE_DIR=/opt/conda/envs/habitat/include/python3.6m -DPYTHON_LIBRARY=/opt/conda/envs/habitat/lib/libpython3.6m.so'
-WORKDIR /root/catkin_ws/src
-RUN git clone https://github.com/CnnDepth/tx2_fcnn_node.git
-WORKDIR /root/catkin_ws/src/tx2_fcnn_node
-RUN git submodule update --init --recursive
-WORKDIR /root/catkin_ws
-
 WORKDIR /root
 
 WORKDIR /opt/conda/lib
@@ -129,6 +77,15 @@ RUN cp libpython3.7m.a libpython3.6m.a
 WORKDIR /root
 
 RUN rm /opt/conda/envs/habitat/lib/libz*
+
+ENV ROS_PYTHON_VERSION=3
+
+RUN sh -c 'echo "deb http://packages.ros.org/ros/ubuntu $(lsb_release -sc) main" > /etc/apt/sources.list.d/ros-latest.list'
+RUN apt-key adv --keyserver 'hkp://keyserver.ubuntu.com:80' --recv-key C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654
+
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
+    ros-melodic-desktop-full \
+    && apt-get clean
 
 RUN DIR1=$(pwd) && \
     MAINDIR=$(pwd)/3rdparty && \
@@ -197,7 +154,57 @@ RUN cp /root/3rdparty/ORB_SLAM2/Thirdparty/g2o/lib/libg2o.so /opt/conda/envs/hab
 RUN ln -s /usr/local/cuda-10.1/ /usr/local/cuda
 RUN cp /usr/lib/x86_64-linux-gnu/libcublas.so /usr/local/cuda-10.1/lib64/
 
-RUN /bin/bash -c '. /opt/ros/melodic/setup.bash; cd /root/catkin_ws; catkin_make --cmake-args -DPATH_TO_TENSORRT_INCLUDE=/usr/lib/x86_64-linux-gnu -DPATH_TO_TENSORRT_LIB=/usr/lib/x86_64-linux-gnu'
+#---------------------------------------------------------------------
+# Install ROS
+#---------------------------------------------------------------------
+
+RUN rosdep init
+RUN rosdep update
+
+RUN apt-get install -y libqt4-dev \
+         qt4-dev-tools \ 
+         libglew-dev \ 
+         glew-utils \ 
+         libgstreamer1.0-dev \ 
+         libgstreamer-plugins-base1.0-dev \ 
+         libglib2.0-dev
+
+#Fix locale (UTF8) issue https://askubuntu.com/questions/162391/how-do-i-fix-my-locale-issue
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y locales
+RUN locale-gen "en_US.UTF-8"
+
+# catkin build tools
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y \
+    python-pyproj \
+    && apt-get clean
+
+RUN pip install -U catkin_tools 
+
+#RUN apt-get install -y python3-catkin-pkg python3-rosdistro python3-rospkg
+RUN apt install -y python-rosinstall \
+         python-rosinstall-generator \ 
+         python-wstool
+         
+RUN echo "source /opt/ros/melodic/setup.bash" >> ~/.bashrc
+RUN /bin/bash -c "source ~/.bashrc"
+
+RUN pip install pyaml rospkg catkin_pkg empy
+RUN pip install transformations
+RUN /bin/bash -c "source ~/.bashrc"
+RUN cp /usr/lib/x86_64-linux-gnu/libcudnn* /
+WORKDIR /root
+RUN mkdir -p /root/catkin_ws/src
+WORKDIR /root/catkin_ws/src
+RUN /bin/bash -c '. /opt/ros/melodic/setup.bash; cd /root/catkin_ws/src; catkin_init_workspace'
+WORKDIR /root/catkin_ws
+RUN /bin/bash -c '. /opt/ros/melodic/setup.bash; cd /root/catkin_ws; catkin_make -DPYTHON_EXECUTABLE:FILEPATH=/opt/conda/envs/habitat/bin/python3'
+WORKDIR /root/catkin_ws/src
+RUN git clone https://github.com/CnnDepth/tx2_fcnn_node.git
+WORKDIR /root/catkin_ws/src/tx2_fcnn_node
+RUN git submodule update --init --recursive
+WORKDIR /root/catkin_ws
+
+RUN /bin/bash -c '. /opt/ros/melodic/setup.bash; cd /root/catkin_ws; catkin_make --cmake-args -DPYTHON_EXECUTABLE:FILEPATH=/opt/conda/envs/habitat/bin/python3 -DPATH_TO_TENSORRT_INCLUDE=/usr/lib/x86_64-linux-gnu -DPATH_TO_TENSORRT_LIB=/usr/lib/x86_64-linux-gnu'
 
 RUN cp /usr/lib/x86_64-linux-gnu/libcudnn* /    
 
@@ -206,7 +213,7 @@ RUN rm /root/catkin_ws/src/tx2_fcnn_node/launch/cnn_only*
 COPY requirements/cnn_only.launch /root/catkin_ws/src/tx2_fcnn_node/launch
 COPY requirements/habitat_rtabmap.launch /root/catkin_ws/src/tx2_fcnn_node/launch
 COPY requirements/habitat_camera_calib.yaml /root/catkin_ws/src/tx2_fcnn_node/calib
-RUN /bin/bash -c '. /opt/ros/melodic/setup.bash; cd /root/catkin_ws; catkin_make --cmake-args -DBUILD_ENGINE_BUILDER=1; \
+RUN /bin/bash -c '. /opt/ros/melodic/setup.bash; cd /root/catkin_ws; catkin_make --cmake-args -DPYTHON_EXECUTABLE:FILEPATH=/opt/conda/envs/habitat/bin/python3 -DBUILD_ENGINE_BUILDER=1; \
 cd /root/catkin_ws/src/tx2_fcnn_node; \
 mkdir engine && cd engine; \
 wget http://pathplanning.ru/public/ECMR-2019/engines/resnet_nonbt_shortcuts_320x240.uff; \
@@ -223,20 +230,41 @@ RUN echo "source /root/catkin_ws/devel/setup.bash" >> /root/.bashrc
 #rostopic list
 #rostopic echo /depth/image
 
-
-
 #rtabmap-databaseViewer ~/.ros/rtabmap.db
 #roslaunch rtabmap_ros rtabmap.launch localization:=true rviz:=true
 #rosbag info 2020-03-10-11-59-07.bag 
 #rosbag record -a
 
-
-
 RUN apt install -y ros-melodic-rtabmap-ros
+
+RUN apt-get -y install gnupg
+RUN curl -sL https://deb.nodesource.com/setup_12.x  | bash -
+RUN apt-get -y install nodejs
+RUN npm install
+
+RUN pip install jupyter bqplot pyyaml ipywidgets
+#RUN jupyter nbextension enable --py --sys-prefix ipywidgets
+RUN pip install jupyros
+ENV PYTHONPATH=/opt/conda/envs/habitat/bin/python3
+RUN echo $PYTHONPATH
+RUN /bin/bash -c "source ~/.bashrc"
+RUN jupyter nbextension enable --py --sys-prefix jupyros
+RUN jupyter labextension install jupyter-ros
+RUN jupyter labextension install @jupyter-widgets/jupyterlab-manager
+
+
+#WORKDIR /root
+#RUN git clone https://github.com/wolfv/jupyter-ros.git
+#WORKDIR /root/jupyter-ros
+#RUN pip install -e .
+RUN jupyter nbextension install --py --symlink --sys-prefix jupyros
+RUN jupyter nbextension enable --py --sys-prefix jupyros
+
 
 ENV CHALLENGE_CONFIG_FILE=/habitat-challenge-data/challenge_pointnav2020.local.rgbd.yaml
 ADD agent.py /agent.py
 ADD submission.sh /submission.sh
+
 
 
 # vnc port

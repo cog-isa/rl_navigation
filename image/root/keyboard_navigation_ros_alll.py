@@ -1,5 +1,6 @@
 import sys
 import os
+import subprocess
 #sys.path.append('/opt/ros/kinetic/lib/python2.7/dist-packages')
 from cv_bridge import CvBridge
 import rospy
@@ -8,6 +9,9 @@ from nav_msgs.msg import Path, Odometry
 from geometry_msgs.msg import Pose, PoseStamped
 import habitat
 from habitat.sims.habitat_simulator.actions import HabitatSimActions
+from habitat.tasks.nav.shortest_path_follower import ShortestPathFollower
+from habitat.utils.visualizations import maps
+from habitat.utils.visualizations.utils import images_to_video
 import sys
 import numpy as np
 import keyboard
@@ -24,12 +28,15 @@ import time
 
 import cv2
 
-rate = 20
+rate = 10
 D = [0, 0, 0, 0, 0]
-K = [160, 0.0, 160.5, 0.0, 160, 120.5, 0.0, 0.0, 1.0]
+K = [457, 0.0, 320.5, 0.0, 457, 180.5, 0.0, 0.0, 1.0]
 R = [1, 0, 0, 0, 1, 0, 0, 0, 1]
-P = [160, 0.0, 160.5, 0.0, 0.0, 160, 120.5, 0.0, 0.0, 0.0, 1.0, 0.0]
-MAX_DEPTH = 100
+P = [457, 0.0, 320.5, 0.0, 0.0, 457, 180.5, 0.0, 0.0, 0.0, 1.0, 0.0]
+MAX_DEPTH = 10
+
+W = 640
+H = 360
 
 def inverse_transform(x, y, start_x, start_y, start_angle):
     new_x = (x - start_x) * np.cos(start_angle) + (y - start_y) * np.sin(start_angle)
@@ -104,6 +111,7 @@ class KeyboardAgent(habitat.Agent):
         rospy.init_node('agent')
         self.save_observations = save_observations
         self.image_publisher = rospy.Publisher(rgb_topic, Image, latch=True, queue_size=100)
+        self.top_down_map_publisher = rospy.Publisher('/habitat/top_down_map', Image, latch=True, queue_size=100)
         self.depth_publisher = rospy.Publisher(depth_topic, Image, latch=True, queue_size=100)
         self.camera_info_publisher = rospy.Publisher(camera_info_topic, CameraInfo, latch=True, queue_size=100)
         self.true_path_publisher = rospy.Publisher(path_topic, Path, queue_size=100)
@@ -111,16 +119,16 @@ class KeyboardAgent(habitat.Agent):
         if self.publish_odom:
             self.odom_publisher = rospy.Publisher(odometry_topic, Odometry, latch=True, queue_size=100)
         self.image = Image()
-        self.image.height = 240
-        self.image.width = 320
+        self.image.height = H
+        self.image.width = W
         self.image.encoding = 'rgb8'
         self.image.is_bigendian = False
         self.depth = Image()
-        self.depth.height = 240
-        self.depth.width = 320
+        self.depth.height = H
+        self.depth.width = W
         self.depth.is_bigendian = True
         self.depth.encoding = 'mono8'
-        self.camera_info = CameraInfo(width=320, height=240, D=D, K=K, R=R, P=P) 
+        self.camera_info = CameraInfo(width=W, height=H, D=D, K=K, R=R, P=P) 
         self.cvbridge = CvBridge()
         self.trajectory = []
         #self.map_path_subscriber = rospy.Subscriber('mapPath', Path, self.mappath_callback)
@@ -134,6 +142,11 @@ class KeyboardAgent(habitat.Agent):
         self.depths = []
         self.actions = []
         self.timestamps = []
+        #rospy.Subscriber('mapPath', Path, self.callback)
+        self.cur_pos = []
+        
+    #def callback(self,data):
+    #    rospy.loginfo(rospy.get_caller_id() + "I heard %s", data)    
 
     def mappath_callback(self, data):
         mappath_pose = data.poses[-1].pose
@@ -166,7 +179,7 @@ class KeyboardAgent(habitat.Agent):
         #    keyboard_commands.append(HabitatSimActions.TURN_RIGHT)
         #if keyboard.is_pressed('up'):
         #    keyboard_commands.append(HabitatSimActions.MOVE_FORWARD)
-        #time.sleep(3)
+        #time.sleep(0.2)
         return keyboard_commands
 
     def publish_rgb(self, image):
@@ -183,6 +196,16 @@ class KeyboardAgent(habitat.Agent):
         self.depth.header.stamp = start_time
         self.depth.header.frame_id = 'base_scan'
         self.depth_publisher.publish(self.depth)
+        
+    def publish_top_down_map(self, top_down_map):
+        print('PUBLISH')
+        start_time = rospy.Time.now()
+        print(top_down_map.shape)
+        self.top_down_map = self.cvbridge.cv2_to_imgmsg(top_down_map)
+        self.top_down_map.encoding = 'rgb8'
+        self.top_down_map.header.stamp = start_time
+        self.top_down_map.header.frame_id = 'camera_link'
+        self.top_down_map_publisher.publish(self.top_down_map)
 
     def publish_camera_info(self):
         start_time = rospy.Time.now()
@@ -247,19 +270,20 @@ class KeyboardAgent(habitat.Agent):
             odom.pose.pose = cur_pose.pose
             self.odom_publisher.publish(odom)
 
-    def act(self, observations):
+    def act(self, observations, top_down_map, i):
         # publish all observations to ROS
         start_time = rospy.Time.now()
         pcd = get_local_pointcloud(observations['rgb'], observations['depth'])
-        print(pcd.shape)
         if self.save_observations:
             self.points.append(pcd)
-            self.rgbs.append(observations['rgb'].reshape((240 * 320, 3)))
+            self.rgbs.append(observations['rgb'].reshape((H * W, 3)))
             self.depths.append(observations['depth'])
             cur_time = rospy.Time.now()
             self.timestamps.append(cur_time.secs + 1e-9 * cur_time.nsecs)
         self.publish_rgb(observations['rgb'])
         self.publish_depth(observations['depth'])
+        if i>0:
+            self.publish_top_down_map(top_down_map)
         self.publish_camera_info()
         #quaternion = tf.transformations.quaternion_from_euler(0, 0, observations['compass'])
         #cur_orientation = dotdict({'x':quaternion[0],'y':quaternion[1],'z':quaternion[2],'w':quaternion[3]})
@@ -318,6 +342,8 @@ class SimpleRLEnv(habitat.RLEnv):
         return self.habitat_env.get_metrics()
 
 def main():
+    
+    subprocess.Popen(["roslaunch","tx2_fcnn_node","habitat_rtabmap.launch"])
     parser = argparse.ArgumentParser()
     parser.add_argument("--task-config", type=str, default="configs/tasks/pointnav.yaml")
     parser.add_argument("--publish-odom", type=bool, default=True)
@@ -326,21 +352,36 @@ def main():
     parser.add_argument("--preset-trajectory", type=bool, default=False)
     args = parser.parse_args()
     # Now define the config for the sensor
-    config = habitat.get_config(config_paths="/data/challenge_pointnav2020.local.rgbd.yaml")
+    
+    config_paths="/data/challenge_pointnav2020.local.rgbd.yaml"
+    
+    config = habitat.get_config(config_paths=config_paths)
     config.defrost()
-    config.SIMULATOR.RGB_SENSOR.HEIGHT = 240
-    config.SIMULATOR.RGB_SENSOR.WIDTH = 320
-    config.SIMULATOR.DEPTH_SENSOR.HEIGHT = 240
-    config.SIMULATOR.DEPTH_SENSOR.WIDTH = 320
+    
+    #if config_paths=="configs/tasks/pointnav.yaml":
+    #    config.TASK.MEASUREMENTS = []
+    #    config.TASK.MEASUREMENTS.append("DISTANCE_TO_GOAL")
+    #    config.TASK.MEASUREMENTS.append("SPL")
+    #    config.SIMULATOR.AGENT_0.SENSORS.append("DEPTH_SENSOR")
+    #else:
+    #    config.SIMULATOR.AGENT_0.HEIGHT = 1.5
+    #    config.SIMULATOR.AGENT_0.RADIUS = 0.1
+    config.SIMULATOR.RGB_SENSOR.HEIGHT = H
+    config.SIMULATOR.RGB_SENSOR.WIDTH = W
+    config.SIMULATOR.DEPTH_SENSOR.HEIGHT = H
+    config.SIMULATOR.DEPTH_SENSOR.WIDTH = W
     config.DATASET.DATA_PATH = '/data/pointgoal_gibson.{split}.json.gz'
-    #config.TASK.MEASUREMENTS.append("TOP_DOWN_MAP")
-    #config.TASK.SENSORS.append("HEADING_SENSOR")
-    config.SIMULATOR.TURN_ANGLE = 0.5
+    config.TASK.MEASUREMENTS.append("TOP_DOWN_MAP")
+    config.TASK.SENSORS.append("HEADING_SENSOR")
+    config.SIMULATOR.TURN_ANGLE = 0.4
+    config.SIMULATOR.TILT_ANGLE = 0.4
+    config.SIMULATOR.FORWARD_STEP_SIZE = 0.03
     config.ENVIRONMENT.MAX_EPISODE_STEPS = 100000
     config.TASK.TOP_DOWN_MAP.MAX_EPISODE_STEPS = 100000
     #config.TASK.SENSORS.append("GPS_SENSOR")
     #config.TASK.SENSORS.append("COMPASS_SENSOR")
     config.DATASET.SCENES_DIR = '/data'
+    config.DATASET.SPLIT = 'val_mini'
     config.SIMULATOR.SCENE = '/data/gibson/Aldrich.glb'
     config.freeze()
     max_depth = config.SIMULATOR.DEPTH_SENSOR.MAX_DEPTH
@@ -348,7 +389,14 @@ def main():
 
     agent = KeyboardAgent(args.save_observations)
     env = SimpleRLEnv(config=config)
+    goal_radius = env.episodes[0].goals[0].radius
+    if goal_radius is None:
+        goal_radius = config.SIMULATOR.FORWARD_STEP_SIZE
+    follower = ShortestPathFollower(env.habitat_env.sim, goal_radius, False)
+    mode = "geodesic_path"
+    follower.mode = mode
     done = False
+    
     if args.create_map:
         print('create map')
         top_down_map = maps.get_topdown_map(env.sim, map_resolution=(5000, 5000))
@@ -371,10 +419,18 @@ def main():
         top_down_map = recolor_map[top_down_map]
         imsave('top_down_map.png', top_down_map)
     observations = env.reset()
+    i=0
+    top_down_map = None
     if not args.preset_trajectory:
         while not done:
-            action = agent.act(observations)
-            observations, rew, done, info = env.step(action)
+            best_action = follower.get_next_action(env.habitat_env.current_episode.goals[0].position)
+            if i>0:
+                top_down_map = draw_top_down_map(info, observations["heading"][0], observations['rgb'].shape[0])    
+            action = agent.act(observations,top_down_map,i)
+            print(observations['pointgoal'])
+            observations, rew, done, info = env.step(best_action)
+            i+=1
+            
     else:
         fin = open('actions.txt', 'r')
         actions = [int(x) for x in fin.readlines()]
@@ -395,5 +451,35 @@ def main():
             print(action, file=fout)
         fout.close()
 
+        
+        
+        
+        
+        
+def draw_top_down_map(info, heading, output_size):
+    top_down_map = maps.colorize_topdown_map(
+        info["top_down_map"]["map"], info["top_down_map"]["fog_of_war_mask"]
+    )
+    original_map_size = top_down_map.shape[:2]
+    map_scale = np.array(
+        (1, original_map_size[1] * 1.0 / original_map_size[0])
+    )
+    new_map_size = np.round(output_size * map_scale).astype(np.int32)
+    # OpenCV expects w, h but map size is in h, w
+    top_down_map = cv2.resize(top_down_map, (new_map_size[1], new_map_size[0]))
+
+    map_agent_pos = info["top_down_map"]["agent_map_coord"]
+    map_agent_pos = np.round(
+        map_agent_pos * new_map_size / original_map_size
+    ).astype(np.int32)
+    top_down_map = maps.draw_agent(
+        top_down_map,
+        map_agent_pos,
+        heading - np.pi / 2,
+        agent_radius_px=top_down_map.shape[0] / 40,
+    )
+    return top_down_map        
+        
+        
 if __name__ == "__main__":
     main()
