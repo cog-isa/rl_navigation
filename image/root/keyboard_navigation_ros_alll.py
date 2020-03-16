@@ -24,11 +24,12 @@ from skimage.io import imsave
 from tqdm import tqdm
 import h5py
 import time
+import random
 
 
 import cv2
 
-rate = 10
+rate = 20
 D = [0, 0, 0, 0, 0]
 K = [457, 0.0, 320.5, 0.0, 457, 180.5, 0.0, 0.0, 1.0]
 R = [1, 0, 0, 0, 1, 0, 0, 0, 1]
@@ -48,7 +49,6 @@ def get_local_pointcloud(rgb, depth, fov=90):
     H, W, _ = rgb.shape
     idx_h = np.tile(np.arange(H), W).reshape((W, H)).T.astype(np.float32) - 120
     idx_w = np.tile(np.arange(W), H).reshape((H, W)).astype(np.float32) - 160
-    print(W, (W / 2 * np.tan(fov / 2)))
     idx_h /= (W / 2 * np.tan(fov / 2))
     idx_w /= (W / 2 * np.tan(fov / 2))
     points = np.array([np.ones((H, W)), -idx_w, -idx_h])
@@ -131,7 +131,8 @@ class KeyboardAgent(habitat.Agent):
         self.camera_info = CameraInfo(width=W, height=H, D=D, K=K, R=R, P=P) 
         self.cvbridge = CvBridge()
         self.trajectory = []
-        #self.map_path_subscriber = rospy.Subscriber('mapPath', Path, self.mappath_callback)
+        
+        
         self.slam_start_time = -1000
         self.slam_update_time = -1000
         self.is_started = False
@@ -144,28 +145,17 @@ class KeyboardAgent(habitat.Agent):
         self.timestamps = []
         #rospy.Subscriber('mapPath', Path, self.callback)
         self.cur_pos = []
+        self.posx = 0
+        self.posy = 0
+        self.posz = 0
         
     #def callback(self,data):
     #    rospy.loginfo(rospy.get_caller_id() + "I heard %s", data)    
 
     def mappath_callback(self, data):
-        mappath_pose = data.poses[-1].pose
-        x, y, z = mappath_pose.position.x, mappath_pose.position.y, mappath_pose.position.z
-        xx, yy, zz, w = mappath_pose.orientation.x, mappath_pose.orientation.y, mappath_pose.orientation.z, mappath_pose.orientation.w
-        cur_time = rospy.Time.now().secs + rospy.Time.now().nsecs * 1e-9
-        eps = 1e-5
-        if cur_time - self.slam_update_time > 30:
-            self.slam_start_time = cur_time
-            print(self.trajectory)
-            start_orientation = self.trajectory[-1].pose.orientation
-            start_position = self.trajectory[-1].pose.position
-            x_angle, z_angle, y_angle = tf.euler_from_quaternion([start_orientation.x, start_orientation.y, start_orientation.z, start_orientation.w])
-            self.slam_start_angle = z_angle
-            self.slam_start_x = start_position.x
-            self.slam_start_y = start_position.y
-            self.slam_start_z = start_position.z
-            self.trajectory = []
-        self.slam_update_time = cur_time
+        self.posx = data.poses[-1].pose.position.x
+        self.posy = data.poses[-1].pose.position.y
+        self.posz = data.poses[-1].pose.position.z
 
     def reset(self):
         pass
@@ -198,9 +188,7 @@ class KeyboardAgent(habitat.Agent):
         self.depth_publisher.publish(self.depth)
         
     def publish_top_down_map(self, top_down_map):
-        print('PUBLISH')
         start_time = rospy.Time.now()
-        print(top_down_map.shape)
         self.top_down_map = self.cvbridge.cv2_to_imgmsg(top_down_map)
         self.top_down_map.encoding = 'rgb8'
         self.top_down_map.header.stamp = start_time
@@ -272,6 +260,7 @@ class KeyboardAgent(habitat.Agent):
 
     def act(self, observations, top_down_map, i):
         # publish all observations to ROS
+        self.map_path_subscriber = rospy.Subscriber('mapPath', Path, self.mappath_callback)
         start_time = rospy.Time.now()
         pcd = get_local_pointcloud(observations['rgb'], observations['depth'])
         if self.save_observations:
@@ -373,12 +362,12 @@ def main():
     config.DATASET.DATA_PATH = '/data/pointgoal_gibson.{split}.json.gz'
     config.TASK.MEASUREMENTS.append("TOP_DOWN_MAP")
     config.TASK.SENSORS.append("HEADING_SENSOR")
-    config.SIMULATOR.TURN_ANGLE = 0.4
-    config.SIMULATOR.TILT_ANGLE = 0.4
+    config.SIMULATOR.TURN_ANGLE = 0.5
+    config.SIMULATOR.TILT_ANGLE = 0.5
     config.SIMULATOR.FORWARD_STEP_SIZE = 0.03
     config.ENVIRONMENT.MAX_EPISODE_STEPS = 100000
     config.TASK.TOP_DOWN_MAP.MAX_EPISODE_STEPS = 100000
-    #config.TASK.SENSORS.append("GPS_SENSOR")
+    config.TASK.SENSORS.append("GPS_SENSOR")
     #config.TASK.SENSORS.append("COMPASS_SENSOR")
     config.DATASET.SCENES_DIR = '/data'
     config.DATASET.SPLIT = 'val_mini'
@@ -421,14 +410,24 @@ def main():
     observations = env.reset()
     i=0
     top_down_map = None
+    prev_image = observations['rgb']
     if not args.preset_trajectory:
         while not done:
             best_action = follower.get_next_action(env.habitat_env.current_episode.goals[0].position)
             if i>0:
                 top_down_map = draw_top_down_map(info, observations["heading"][0], observations['rgb'].shape[0])    
             action = agent.act(observations,top_down_map,i)
+            if random.random()>0.2:
+                act = best_action
+            else:
+                act = random.randint(1,3)
+            observations, rew, done, info = env.step(act)
+            next_image = observations['rgb']
             print(observations['pointgoal'])
-            observations, rew, done, info = env.step(best_action)
+            print(observations['gps'])
+            print(agent.posx,agent.posy)
+            print(i,'\t',done,'\t',(next_image==prev_image).all(),'\t',env._env._episode_over,'\t',act)
+            prev_image = next_image
             i+=1
             
     else:
