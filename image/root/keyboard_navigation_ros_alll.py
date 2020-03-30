@@ -70,7 +70,7 @@ class AgentPositionSensor(habitat.Sensor):
 
     # Defines the name of the sensor in the sensor suite dictionary
     def _get_uuid(self, *args: Any, **kwargs: Any):
-        return "pointgoal_with_gps_compass"
+        return "agent_position"
 
     # Defines the type of the sensor
     def _get_sensor_type(self, *args: Any, **kwargs: Any):
@@ -145,12 +145,10 @@ class KeyboardAgent(habitat.Agent):
         self.timestamps = []
         #rospy.Subscriber('mapPath', Path, self.callback)
         self.cur_pos = []
-        self.posx = 0
-        self.posy = 0
-        self.posz = 0
-        
-    #def callback(self,data):
-    #    rospy.loginfo(rospy.get_caller_id() + "I heard %s", data)    
+        self.posx = 0; self.posy = 0; self.posz = 0;  
+        self.trux = 0; self.truy = 0; self.truz = 0; 
+        self.goalx = 0; self.goaly = 0
+        self.startx = 0; self.starty = 0; self.startz = 0; 
 
     def mappath_callback(self, data):
         self.posx = data.poses[-1].pose.position.x
@@ -179,6 +177,21 @@ class KeyboardAgent(habitat.Agent):
         self.image.header.stamp = start_time
         self.image.header.frame_id = 'camera_link'
         self.image_publisher.publish(self.image)
+        
+    def publish_path(self, x,y,z,cur_pose):
+        cur_pose = PoseStamped()
+        cur_pose.header.stamp = start_time
+        cur_pose.pose.position.x = x
+        cur_pose.pose.position.y = y
+        cur_pose.pose.position.z = z
+        cur_pose.pose.orientation = cur_orientation
+        self.trajectory.append(cur_pose)
+        # publish the path
+        true_path = Path()
+        true_path.header.stamp = start_time
+        true_path.header.frame_id = 'map'
+        true_path.poses = self.trajectory
+        self.true_path_publisher.publish(true_path)
 
     def publish_depth(self, depth):
         start_time = rospy.Time.now()
@@ -206,19 +219,20 @@ class KeyboardAgent(habitat.Agent):
         print(pose)
         position, rotation = pose
         y, z, x = position
+        
         cur_orientation = rotation
         cur_euler_angles = tf.euler_from_quaternion([cur_orientation.w, cur_orientation.x, cur_orientation.z, cur_orientation.y])
         cur_x_angle, cur_y_angle, cur_z_angle = cur_euler_angles
         cur_z_angle += np.pi
-        print('Source position:', y, z, x)
-        print('Source quat:', cur_orientation.x, cur_orientation.y, cur_orientation.z, cur_orientation.w)
-        print('Euler angles:', cur_x_angle, cur_y_angle, cur_z_angle)
+        #print('Source position:', y, z, x)
+        #print('Source quat:', cur_orientation.x, cur_orientation.y, cur_orientation.z, cur_orientation.w)
+        #print('Euler angles:', cur_x_angle, cur_y_angle, cur_z_angle)
         if self.publish_odom:
             self.slam_update_time = start_time.secs + 1e-9 * start_time.nsecs
             if not self.is_started:
                 self.is_started = True
                 self.slam_start_angle = cur_z_angle
-                print("SLAM START ANGLE:", self.slam_start_angle)
+                #print("SLAM START ANGLE:", self.slam_start_angle)
                 self.slam_start_x = x
                 self.slam_start_y = y
                 self.slam_start_z = z
@@ -227,12 +241,13 @@ class KeyboardAgent(habitat.Agent):
             rviz_x, rviz_y = inverse_transform(x, y, self.slam_start_x, self.slam_start_y, self.slam_start_angle)
             rviz_z = z - self.slam_start_z
             cur_quaternion = tf.quaternion_from_euler(0, 0, cur_z_angle - self.slam_start_angle)
-            print('Rotated quat:', cur_quaternion)
+            #print('Rotated quat:', cur_quaternion)
             cur_orientation.w = cur_quaternion[0]
             cur_orientation.x = cur_quaternion[1]
             cur_orientation.y = cur_quaternion[2]
             cur_orientation.z = cur_quaternion[3]
             x, y, z = rviz_x, rviz_y, rviz_z
+        self.trux = x; self.truy = y; self.truz = z;    
         self.positions.append(np.array([x, y, z]))
         self.rotations.append(tf.quaternion_matrix(cur_quaternion))
         # add current point to path
@@ -274,9 +289,7 @@ class KeyboardAgent(habitat.Agent):
         if i>0:
             self.publish_top_down_map(top_down_map)
         self.publish_camera_info()
-        #quaternion = tf.transformations.quaternion_from_euler(0, 0, observations['compass'])
-        #cur_orientation = dotdict({'x':quaternion[0],'y':quaternion[1],'z':quaternion[2],'w':quaternion[3]})
-        #self.publish_true_path([np.hstack((observations['gps'],[0]))[[0,2,1]]]+[cur_orientation], self.publish_odom)
+        self.publish_true_path(observations['agent_position'], self.publish_odom)
         # receive command from keyboard and move
         actions = self.get_actions_from_keyboard()
         start_time_seconds = start_time.secs + start_time.nsecs * 1e-9
@@ -361,14 +374,23 @@ def main():
     config.SIMULATOR.DEPTH_SENSOR.WIDTH = W
     config.DATASET.DATA_PATH = '/data/pointgoal_gibson.{split}.json.gz'
     config.TASK.MEASUREMENTS.append("TOP_DOWN_MAP")
-    config.TASK.SENSORS.append("HEADING_SENSOR")
+    config.TASK.SENSORS = ["HEADING_SENSOR", "COMPASS_SENSOR", "GPS_SENSOR", "POINTGOAL_SENSOR"]#POINTGOAL_WITH_GPS_COMPASS_SENSOR
+    config.TASK.POINTGOAL_WITH_GPS_COMPASS_SENSOR.DIMENSIONALITY = 3
+    config.TASK.POINTGOAL_WITH_GPS_COMPASS_SENSOR.GOAL_FORMAT = "CARTESIAN"
+    config.TASK.POINTGOAL_SENSOR.DIMENSIONALITY = 3
+    config.TASK.POINTGOAL_SENSOR.GOAL_FORMAT = "CARTESIAN"
+    config.TASK.GPS_SENSOR.DIMENSIONALITY = 3
+    
+    config.TASK.AGENT_POSITION_SENSOR = habitat.Config()
+    config.TASK.AGENT_POSITION_SENSOR.TYPE = "position_sensor"
+    config.TASK.AGENT_POSITION_SENSOR.ANSWER_TO_LIFE = 42
+    config.TASK.SENSORS.append("AGENT_POSITION_SENSOR")
+    
     config.SIMULATOR.TURN_ANGLE = 0.5
     config.SIMULATOR.TILT_ANGLE = 0.5
     config.SIMULATOR.FORWARD_STEP_SIZE = 0.03
     config.ENVIRONMENT.MAX_EPISODE_STEPS = 100000
     config.TASK.TOP_DOWN_MAP.MAX_EPISODE_STEPS = 100000
-    config.TASK.SENSORS.append("GPS_SENSOR")
-    #config.TASK.SENSORS.append("COMPASS_SENSOR")
     config.DATASET.SCENES_DIR = '/data'
     config.DATASET.SPLIT = 'val_mini'
     config.SIMULATOR.SCENE = '/data/gibson/Aldrich.glb'
@@ -407,35 +429,35 @@ def main():
         ]
         top_down_map = recolor_map[top_down_map]
         imsave('top_down_map.png', top_down_map)
+        
     observations = env.reset()
     i=0
     top_down_map = None
-    prev_image = observations['rgb']
-    if not args.preset_trajectory:
-        while not done:
-            best_action = follower.get_next_action(env.habitat_env.current_episode.goals[0].position)
-            if i>0:
-                top_down_map = draw_top_down_map(info, observations["heading"][0], observations['rgb'].shape[0])    
-            action = agent.act(observations,top_down_map,i)
-            if random.random()>0.2:
-                act = best_action
-            else:
-                act = random.randint(1,3)
-            observations, rew, done, info = env.step(act)
-            next_image = observations['rgb']
-            print(observations['pointgoal'])
-            print(observations['gps'])
-            print(agent.posx,agent.posy)
-            print(i,'\t',done,'\t',(next_image==prev_image).all(),'\t',env._env._episode_over,'\t',act)
-            prev_image = next_image
-            i+=1
+    agent.startx, agent.starty, agent.startz, = env.current_episode.start_position[2], env.current_episode.start_position[0], env.current_episode.start_position[1]
+    xx,yy = observations['pointgoal']
+    agent.goalx, agent.goaly = inverse_transform(yy, xx, 0, 0, np.pi)
+    while not done:
+        best_action = follower.get_next_action(env.habitat_env.current_episode.goals[0].position)
+        if i>0:
+            top_down_map = draw_top_down_map(info, observations["heading"][0], observations['rgb'].shape[0])    
+        action = agent.act(observations,top_down_map,i)
+        if random.random()>0.2:
+            act = best_action
+        else:
+            act = random.randint(1,3)
+        observations, rew, done, info = env.step(act)
+        print(observations['pointgoal'])
+        print(observations['gps'])
+        print(agent.posx,agent.posy,agent.posz)
+        print(agent.trux,agent.truy,agent.truz)
+        print(agent.goalx,agent.goaly,'\t','POINTGOAL_RVIZ')
+        print(agent.startx,agent.starty,agent.startz)
+        print(agent.slam_start_x, agent.slam_start_y, agent.slam_start_angle)
+        print(i,'\t',done,'\t',act)
+        i+=1
+
             
-    else:
-        fin = open('actions.txt', 'r')
-        actions = [int(x) for x in fin.readlines()]
-        for action in actions:
-            agent.act(observations)
-            observations = env.step(action)
+            
     if args.save_observations:
         with h5py.File('pointcloud.hdf5', 'w') as f:
             f.create_dataset("points", data=np.array(agent.points))
