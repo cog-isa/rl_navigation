@@ -1,1 +1,1 @@
-sudo docker build -t habitat_docker .
+sudo docker build -t habitat_anton .

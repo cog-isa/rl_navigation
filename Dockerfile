@@ -158,8 +158,8 @@ RUN cp /usr/lib/x86_64-linux-gnu/libcublas.so /usr/local/cuda-10.1/lib64/
 # Install ROS
 #---------------------------------------------------------------------
 
-RUN rosdep init
-RUN rosdep update
+#RUN rosdep init
+#RUN rosdep update
 
 RUN apt-get install -y libqt4-dev \
          qt4-dev-tools \ 
