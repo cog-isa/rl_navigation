@@ -346,7 +346,7 @@ class PPOBlockAgent():
                 self.local_goals = []
 
 
-
+"""
 from stable_baselines import PPO2
 class ApenAIPPOBlockAgent():
     def __init__(self, scale, model_path, loc_goal_change_freq):
@@ -400,4 +400,4 @@ class ApenAIPPOBlockAgent():
 
         self.step_counter += 1
         return action
-
+"""

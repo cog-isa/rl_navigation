@@ -1,4 +1,4 @@
-sudo docker run --runtime=nvidia -it --rm --name habitat_docker \
+sudo docker run --runtime=nvidia -it --rm --name habitat_anton \
 --env="DISPLAY=$DISPLAY" \
 --env="QT_X11_NO_MITSHM=1" \
 --volume="/tmp/.X11-unix:/tmp/.X11-unix:rw" \
@@ -6,5 +6,5 @@ sudo docker run --runtime=nvidia -it --rm --name habitat_docker \
 --volume="$XAUTH:$XAUTH" \
 --privileged \
 -p $1:5900 -p $2:8888 -p $3:11311 -e jup_port=$2 -e vnc_port=$1 -e ros_port=$3 \
--v /home/askrynnik/alstar_demo/data/scene_datasets/gibson:/data/gibson \
--v  /home/askrynnik/alstar_demo/data/datasets/pointnav/gibson/v1:/data/v1  habitat_docker
+-v /home/anaumov/data/data/scene_datasets/gibson:/data/gibson \
+-v  /home/anaumov/data/data/datasets/pointnav/gibson/v1:/data/v1  habitat_anton
