@@ -59,11 +59,11 @@ class ResNetEncoder(nn.Module):
     ):
         super().__init__()
 
-        if "rgb" in observation_space.spaces:
-            self._n_input_rgb = observation_space.spaces["rgb"].shape[2]
-            spatial_size = observation_space.spaces["rgb"].shape[0] // 2
-        else:
-            self._n_input_rgb = 0
+    #    if "rgb" in observation_space.spaces:
+    #        self._n_input_rgb = observation_space.spaces["rgb"].shape[2]
+    #        spatial_size = observation_space.spaces["rgb"].shape[0] // 2
+    #    else:
+        self._n_input_rgb = 0
 
         if "depth" in observation_space.spaces:
             self._n_input_depth = observation_space.spaces["depth"].shape[2]
@@ -79,7 +79,7 @@ class ResNetEncoder(nn.Module):
             self.running_mean_and_var = nn.Sequential()
 
         if not self.is_blind:
-            input_channels = self._n_input_depth + self._n_input_rgb
+            input_channels = self._n_input_depth# + self._n_input_rgb
             self.backbone = make_backbone(input_channels, baseplanes, ngroups)
 
             final_spatial = int(
@@ -125,12 +125,12 @@ class ResNetEncoder(nn.Module):
             return None
 
         cnn_input = []
-        if self._n_input_rgb > 0:
-            rgb_observations = observations["rgb"]
-            # permute tensor to dimension [BATCH x CHANNEL x HEIGHT X WIDTH]
-            rgb_observations = rgb_observations.permute(0, 3, 1, 2)
-            rgb_observations = rgb_observations / 255.0  # normalize RGB
-            cnn_input.append(rgb_observations)
+   #     if self._n_input_rgb > 0:
+   #         rgb_observations = observations["rgb"]
+   #         # permute tensor to dimension [BATCH x CHANNEL x HEIGHT X WIDTH]
+   #         rgb_observations = rgb_observations.permute(0, 3, 1, 2)
+   #         rgb_observations = rgb_observations / 255.0  # normalize RGB
+   #         cnn_input.append(rgb_observations)
 
         if self._n_input_depth > 0:
             depth_observations = observations["depth"]

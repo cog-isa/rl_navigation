@@ -54,7 +54,7 @@ class DDPPOTrainer(PPOTrainer):
         interrupted_state = load_interrupted_state()
         if interrupted_state is not None:
             config = interrupted_state["config"]
-
+        self.tcp_store = None
         super().__init__(config)
 
     def _setup_actor_critic_agent(self, ppo_cfg: Config) -> None:
@@ -83,7 +83,7 @@ class DDPPOTrainer(PPOTrainer):
             pretrained_state = torch.load(self.config.RL.DDPPO.pretrained_weights, map_location="cpu")
 
         if self.config.RL.DDPPO.pretrained:
-            self.actor_critic.load_state_dict({k[len("actor_critic.") :]: v for k, v in pretrained_state["state_dict"].items()})
+            self.actor_critic.load_state_dict({k[len("actor_critic.") :]: v for k, v in pretrained_state["state_dict"].items() if 'net.visual_encoder.backbone' in k})
         elif self.config.RL.DDPPO.pretrained_encoder:
             prefix = "actor_critic.net.visual_encoder."
             self.actor_critic.net.visual_encoder.load_state_dict({k[len(prefix) :]: v for k, v in pretrained_state["state_dict"].items() if k.startswith(prefix)})
@@ -110,19 +110,19 @@ class DDPPOTrainer(PPOTrainer):
             use_normalized_advantage=ppo_cfg.use_normalized_advantage,
         )
 
-    def train(self) -> None:
+    def train_init(self) -> None:
         r"""Main method for DD-PPO.
         Returns:
             None
         """
-        self.local_rank, tcp_store = init_distrib_slurm(
+        self.local_rank, self.tcp_store = init_distrib_slurm(
             self.config.RL.DDPPO.distrib_backend
         )
         add_signal_handlers()
 
         # Stores the number of workers that have finished their rollout
         num_rollouts_done_store = distrib.PrefixStore(
-            "rollout_tracker", tcp_store
+            "rollout_tracker", self.tcp_store
         )
         num_rollouts_done_store.set("num_done", "0")
 
@@ -169,6 +169,15 @@ class DDPPOTrainer(PPOTrainer):
                     )
                 )
             )
+
+        
+    def train(self) -> None:
+                    
+        num_rollouts_done_store = distrib.PrefixStore(
+            "rollout_tracker", self.tcp_store)
+        num_rollouts_done_store.set("num_done", "0")
+        ppo_cfg = self.config.RL.PPO
+  
 
         observations = self.envs.reset()
         print('RESET')
@@ -344,6 +353,7 @@ class DDPPOTrainer(PPOTrainer):
                         for k, v in deltas.items()
                         if k not in {"reward", "count"}
                     }
+                    print(metrics)
                     if len(metrics) > 0:
                         writer.add_scalars("metrics", metrics, count_steps)
 

@@ -171,7 +171,15 @@ class PPOTrainer(BaseRLTrainer):
                 running_episode_stats[k] = torch.zeros_like(
                     running_episode_stats["count"]
                 )
+        #    if 'distance_to_goal' in k:
+        #        print(v)
+            if torch.isnan(torch.mean(v[~torch.isinf(v)&~torch.isnan(v)])):
+                meaan = 4.0
+            else:
+                meaan = torch.mean(v[~torch.isinf(v)&~torch.isnan(v)])
 
+            v[torch.isinf(v)|torch.isnan(v)] = meaan
+            
             running_episode_stats[k] += (1 - masks) * v
 
         current_episode_reward *= masks

@@ -5,7 +5,7 @@ import time
 import habitat
 from collections import OrderedDict, defaultdict, deque
 
-from utils import FrameStack,FrameSkip,AgentPositionSensor,draw_top_down_map,inverse_transform,make_train_data,RewardForwardFilter,RunningMeanStd,global_grad_norm_
+from utils import AgentPositionSensor,draw_top_down_map,inverse_transform,make_train_data,RewardForwardFilter,RunningMeanStd,global_grad_norm_
 
 import numpy as np
 import torch
@@ -60,7 +60,13 @@ class NavRLEnv1(habitat.RLEnv):
 
     def step(self, *args, **kwargs):
         self._previous_action = kwargs["action"]
-        return super().step(*args, **kwargs)
+        total_reward = 0.0
+        for i in self._rl_config.FRAMESKIP:
+            obs, reward, done, info = super().step(*args, **kwargs)
+            total_reward += reward
+            if done:
+                break      
+        return obs, total_reward, done, info      
 
     def get_reward_range(self):
         return (
@@ -119,6 +125,10 @@ class MyRLEnvNew(habitat.RLEnv):
         self.goalx = 0; self.goaly = 0
         self.state = {}
         self.obs = None
+        self.k = self._rl_config.FRAMESTACK
+        self.frames_rgb = deque([], maxlen=self.k)
+        self.frames_depth = deque([], maxlen=self.k)
+        self.frames_pose = deque([], maxlen=self.k)
         
         super().__init__(self._core_env_config, dataset)
         self.observation_space.spaces['pos'] = Box(low=-1000, high=1000, shape=(2,), dtype=np.float32)
@@ -132,6 +142,8 @@ class MyRLEnvNew(habitat.RLEnv):
     def reset(self):
         self._previous_action = None
         observation = super().reset()
+        
+            
         self._previous_measure = self._env.get_metrics()[self._reward_measure_name]
         self.obs = observation
         self._previous_target_distance = self.habitat_env.current_episode.info["geodesic_distance"]
@@ -143,23 +155,35 @@ class MyRLEnvNew(habitat.RLEnv):
         self.goalx, self.goaly = inverse_transform(yy, xx, 0, 0, np.pi)
         xdif,ydif = self.trux-self.goalx, self.truy-self.goaly
         self.state['rgb'], self.state['depth'], self.state['pos'] = observation['rgb'], observation['depth'], np.array([xdif,ydif])
-        return self.state
+        
+        for _ in range(self.k):
+            self.frames_rgb.append(observation['rgb'])
+            self.frames_depth.append(observation['depth'])
+            self.frames_pose.append(np.array([xdif,ydif]))
+        
+        return {'rgb':np.concatenate(self.frames_rgb,axis=2), 'depth':np.concatenate(self.frames_depth,axis=2), 'pos':np.concatenate(self.frames_pose,axis=0)}
 
 
     def step(self, *args, **kwargs):
         self._previous_action = kwargs["action"]
-        observations = super().step(*args, **kwargs)
-        self.obs = observations
+        for i in range(self._rl_config.FRAMESKIP):
+            observations = self._env.step(*args, **kwargs)
+            self.obs = observations
+            done = self.get_done(observations)
+            info = self.get_info(observations)
+            self.publish_true_path(observations['agent_position'])
+            xdif,ydif = self.trux-self.goalx, self.truy-self.goaly
+            self.state['rgb'], self.state['depth'], self.state['pos'] = observations['rgb'], observations['depth'], np.array([xdif,ydif])
+            if done:
+                break      
         reward = self.get_reward(observations)
         if math.isnan(reward):
-            reward = 0
-        done = self.get_done(observations)
-        info = self.get_info(observations)
-        self.publish_true_path(observations[0]['agent_position'])
-        xdif,ydif = self.trux-self.goalx, self.truy-self.goaly
-        self.state['rgb'], self.state['depth'], self.state['pos'] = observations[0]['rgb'], observations[0]['depth'], np.array([xdif,ydif])
+                reward = 0
+        self.frames_rgb.append(self.state['rgb'])
+        self.frames_depth.append(self.state['depth'])
+        self.frames_pose.append(self.state['pos'])        
 
-        return self.state, reward, done, info
+        return {'rgb':np.concatenate(self.frames_rgb,axis=2), 'depth':np.concatenate(self.frames_depth,axis=2), 'pos':np.concatenate(self.frames_pose,axis=0)}, reward, done, info
 
 
     def get_reward_range(self):
@@ -170,7 +194,7 @@ class MyRLEnvNew(habitat.RLEnv):
 
     def get_reward(self, observations):
         reward = self._rl_config.SLACK_REWARD
-
+        
         current_measure = self._env.get_metrics()[self._reward_measure_name]
 
         reward += self._previous_measure - current_measure
@@ -217,7 +241,7 @@ class MyRLEnvNew(habitat.RLEnv):
         cur_orientation.y = cur_quaternion[2]
         cur_orientation.z = cur_quaternion[3]
         x, y, z = rviz_x, rviz_y, rviz_z
-        self.trux = x; self.truy = y; self.truz = z;          
+        self.trux = x; self.truy = y; self.truz = z;            
     
 
 @baseline_registry.register_env(name="MyRLEnv")
