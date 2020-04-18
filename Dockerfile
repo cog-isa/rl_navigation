@@ -1,4 +1,4 @@
-FROM fairembodied/habitat-challenge:2020
+FROM fairembodied/habitat-challenge:testing_2020_habitat_base_docker
 
 RUN apt-get update && apt-get install -y cuda-toolkit-10.1
 #---------------------------------------------------------------------

@@ -359,15 +359,6 @@ def main():
     
     config = habitat.get_config(config_paths=config_paths)
     config.defrost()
-    
-    #if config_paths=="configs/tasks/pointnav.yaml":
-    #    config.TASK.MEASUREMENTS = []
-    #    config.TASK.MEASUREMENTS.append("DISTANCE_TO_GOAL")
-    #    config.TASK.MEASUREMENTS.append("SPL")
-    #    config.SIMULATOR.AGENT_0.SENSORS.append("DEPTH_SENSOR")
-    #else:
-    #    config.SIMULATOR.AGENT_0.HEIGHT = 1.5
-    #    config.SIMULATOR.AGENT_0.RADIUS = 0.1
     config.SIMULATOR.RGB_SENSOR.HEIGHT = H
     config.SIMULATOR.RGB_SENSOR.WIDTH = W
     config.SIMULATOR.DEPTH_SENSOR.HEIGHT = H
@@ -375,11 +366,11 @@ def main():
     config.DATASET.DATA_PATH = '/data/pointgoal_gibson.{split}.json.gz'
     config.TASK.MEASUREMENTS.append("TOP_DOWN_MAP")
     config.TASK.SENSORS = ["HEADING_SENSOR", "COMPASS_SENSOR", "GPS_SENSOR", "POINTGOAL_SENSOR"]#POINTGOAL_WITH_GPS_COMPASS_SENSOR
-    config.TASK.POINTGOAL_WITH_GPS_COMPASS_SENSOR.DIMENSIONALITY = 3
+    config.TASK.POINTGOAL_WITH_GPS_COMPASS_SENSOR.DIMENSIONALITY = 2
     config.TASK.POINTGOAL_WITH_GPS_COMPASS_SENSOR.GOAL_FORMAT = "CARTESIAN"
-    config.TASK.POINTGOAL_SENSOR.DIMENSIONALITY = 3
+    config.TASK.POINTGOAL_SENSOR.DIMENSIONALITY = 2
     config.TASK.POINTGOAL_SENSOR.GOAL_FORMAT = "CARTESIAN"
-    config.TASK.GPS_SENSOR.DIMENSIONALITY = 3
+    config.TASK.GPS_SENSOR.DIMENSIONALITY = 2
     
     config.TASK.AGENT_POSITION_SENSOR = habitat.Config()
     config.TASK.AGENT_POSITION_SENSOR.TYPE = "position_sensor"
@@ -405,7 +396,7 @@ def main():
         goal_radius = config.SIMULATOR.FORWARD_STEP_SIZE
     follower = ShortestPathFollower(env.habitat_env.sim, goal_radius, False)
     mode = "geodesic_path"
-    follower.mode = mode
+   # follower.mode = mode
     done = False
     
     if args.create_map:
@@ -435,7 +426,7 @@ def main():
     top_down_map = None
     agent.startx, agent.starty, agent.startz, = env.current_episode.start_position[2], env.current_episode.start_position[0], env.current_episode.start_position[1]
     xx,yy = observations['pointgoal']
-    agent.goalx, agent.goaly = inverse_transform(yy, xx, 0, 0, np.pi)
+    agent.goalx, agent.goaly = inverse_transform(yy, xx, 0, 0, -np.pi)
     while not done:
         best_action = follower.get_next_action(env.habitat_env.current_episode.goals[0].position)
         if i>0:
@@ -446,13 +437,13 @@ def main():
         else:
             act = random.randint(1,3)
         observations, rew, done, info = env.step(act)
-        print(observations['pointgoal'])
-        print(observations['gps'])
-        print(agent.posx,agent.posy,agent.posz)
-        print(agent.trux,agent.truy,agent.truz)
-        print(agent.goalx,agent.goaly,'\t','POINTGOAL_RVIZ')
-        print(agent.startx,agent.starty,agent.startz)
-        print(agent.slam_start_x, agent.slam_start_y, agent.slam_start_angle)
+        print(observations['pointgoal'],'\t','obs pointgoal')
+        print(observations['gps'],'\t','obs_gps')
+        print(agent.posx,agent.posy,agent.posz,'\t','agent pos_x_y_z')
+        print(agent.trux,agent.truy,agent.truz,'\t','agent true_x_y_z')
+        print(agent.goalx,agent.goaly,'\t','agent goal_x_y')
+        print(agent.startx,agent.starty,agent.startz,'\t','agent start_x_y_z')
+        print(agent.slam_start_x, agent.slam_start_y, agent.slam_start_angle,'\t','agent slam_x_y_angle')
         print(i,'\t',done,'\t',act)
         i+=1
 
