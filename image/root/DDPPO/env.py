@@ -42,7 +42,7 @@ import math
 @baseline_registry.register_env(name="MyRLEnvNew")
 class MyRLEnvNew(habitat.RLEnv):
     
-    def __init__(self, args, rank, config: Config, dataset: Optional[Dataset] = None) -> None:
+    def __init__(self, config: Config, dataset: Optional[Dataset] = None) -> None:
         """Constructor
         :param config: config to construct `Env`
         :param dataset: dataset to construct `Env`.

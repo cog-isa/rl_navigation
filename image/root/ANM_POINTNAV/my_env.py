@@ -57,6 +57,7 @@ def _preprocess_depth(depth):
     mask1 = depth == 0
     depth[mask1] = np.NaN
     depth = depth*1000.
+    depth = np.nan_to_num(depth,nan=np.nan_to_num(depth).max())
     return depth
 
 @baseline_registry.register_env(name="MyRLEnvNew")
@@ -108,6 +109,8 @@ class MyRLEnvNew(habitat.RLEnv):
                     transforms.Resize((args.frame_height, args.frame_width),
                                       interpolation = Image.NEAREST)])
         
+        self.observation_space.spaces['rgb'] = Box(low=-256, high=256, shape=(3,128,128), dtype=np.uint8)
+        self.observation_space.spaces['depth'] = Box(low=-256, high=256, shape=(256,256), dtype=np.uint8)
         self.observation_space.spaces['pos'] = Box(low=-1000, high=1000, shape=(2,), dtype=np.float32)
         del self.observation_space.spaces['agent_position']
         del self.observation_space.spaces['compass']
@@ -134,11 +137,11 @@ class MyRLEnvNew(habitat.RLEnv):
         
         # Preprocess observations
         rgb = observation['rgb'].astype(np.uint8)
-        self.obs = rgb # For visualization
-        #if self.args.frame_width != self.args.env_frame_width:
-        #    rgb = np.asarray(self.res(rgb))
+        rgb = np.asarray(self.res(rgb))
         state = rgb.transpose(2, 0, 1)
         depth = _preprocess_depth(observation['depth'])
+        depth1 = np.copy(depth)
+        
         
         # Initialize map and pose
         self.map_size_cm = self.args.map_size_cm
@@ -155,10 +158,10 @@ class MyRLEnvNew(habitat.RLEnv):
                           self.curr_loc_gt[1]*100.0,
                           np.deg2rad(self.curr_loc_gt[2]))
         
+   
         # Update ground_truth map and explored area
         fp_proj, self.map, fp_explored, self.explored_map = \
-            self.mapper.update_map(depth, self.mapper_gt_pose)
-            
+            self.mapper.update_map(depth1, self.mapper_gt_pose)  
         # Initialize variables
         self.scene_name = self.habitat_env.sim.config.SCENE
         self.visited = np.zeros(self.map.shape)
@@ -191,11 +194,12 @@ class MyRLEnvNew(habitat.RLEnv):
         self.state['rgb'], self.state['depth'], self.state['pos'] = observation['rgb'], observation['depth'], np.array([xdif,ydif])
         
         for _ in range(self.k):
-            self.frames_rgb.append(observation['rgb'])
-            self.frames_depth.append(observation['depth'])
+            self.frames_rgb.append(state)
+            self.frames_depth.append(depth)
             self.frames_pose.append(np.array([xdif,ydif]))
         
-        return {'rgb':np.concatenate(self.frames_rgb,axis=2), 'depth':np.concatenate(self.frames_depth,axis=2), 'pos':np.concatenate(self.frames_pose,axis=0)}
+        
+        return {'rgb':np.concatenate(self.frames_rgb,axis=0), 'depth':np.concatenate(self.frames_depth,axis=0), 'pos':np.concatenate(self.frames_pose,axis=0)}, self.info
 
 
     def step(self, *args, **kwargs):
@@ -206,23 +210,52 @@ class MyRLEnvNew(habitat.RLEnv):
         self.last_loc_gt = np.copy(self.curr_loc_gt)
         self._previous_action = kwargs["action"]
         
-        for i in range(self._rl_config.FRAMESKIP):
+        curr_sim_pose = self.get_sim_location()
+        pose_loc = self.curr_loc
+        last_sim_location = curr_sim_pose
+        pose_last = self.last_loc
+        
+        frameskip = self._rl_config.FRAMESKIP
+        if kwargs["action"]==1:
+            frameskip = int(self._rl_config.FRAMESKIP/4)
+        
+        for i in range(frameskip):
             observations = self._env.step(*args, **kwargs)
+            curr_sim_pose = self.get_sim_location()
+            dx, dy, do = pu.get_rel_pose_change(curr_sim_pose, last_sim_location)
+            pose_loc = pu.get_new_pose(pose_loc,
+                               (dx, dy, do))
+            x1, y1, t1 = pose_last
+            x2, y2, t2 = pose_loc
+            dist = pu.get_l2_distance(x1, x2, y1, y2)
+            #print(dist)
             self.obs = observations
             done = self.get_done(observations)
-            info = self.get_info(observations)
+            self.info = self.get_info(observations)
             self.publish_true_path(observations['agent_position'])
             xdif,ydif = self.trux-self.goalx, self.truy-self.goaly
             self.state['rgb'], self.state['depth'], self.state['pos'] = observations['rgb'], observations['depth'], np.array([xdif,ydif])
-            if done:
+            
+            last_sim_location = curr_sim_pose
+            pose_last = pose_loc
+            
+            if done or (kwargs["action"]==1 and dist<0.05):
                 break
-                
-                
-                
-        depth = _preprocess_depth(observations['depth'])  
+        
+        # Preprocess observations
+        rgb = observations['rgb'].astype(np.uint8)
+        rgb = np.asarray(self.res(rgb))
+        state = rgb.transpose(2, 0, 1)
+        depth = _preprocess_depth(observations['depth'])
+        depth1 = np.copy(depth)
+        
+        self.frames_rgb.append(state)
+        self.frames_depth.append(depth)
+        self.frames_pose.append(self.state['pos'])     
+        
         # Get base sensor and ground-truth pose
         dx_gt, dy_gt, do_gt = self.get_gt_pose_change()
-        print(dx_gt, dy_gt, do_gt)
+        #print(dx_gt, dy_gt, do_gt)
         dx_base, dy_base, do_base = dx_gt, dy_gt, do_gt#self.get_base_pose_change(action,(dx_gt, dy_gt, do_gt))
         
         self.curr_loc = pu.get_new_pose(self.curr_loc,
@@ -238,19 +271,64 @@ class MyRLEnvNew(habitat.RLEnv):
         
         # Update ground_truth map and explored area
         fp_proj, self.map, fp_explored, self.explored_map = \
-                self.mapper.update_map(depth, self.mapper_gt_pose)
+                self.mapper.update_map(depth1, self.mapper_gt_pose)
         
+        # Update collision map
+        if kwargs["action"] == 1:
+            x1, y1, t1 = self.last_loc
+            x2, y2, t2 = self.curr_loc
+            if abs(x1 - x2)< 0.05 and abs(y1 - y2) < 0.05:
+                self.col_width += 2
+                self.col_width = min(self.col_width, 9)
+            else:
+                self.col_width = 1
+
+            dist = pu.get_l2_distance(x1, x2, y1, y2)
+            #print(dist)
+            if dist < self.args.collision_threshold: #Collision
+                length = 2
+                width = self.col_width
+                buf = 3
+                for i in range(length):
+                    for j in range(width):
+                        wx = x1 + 0.05*((i+buf) * np.cos(np.deg2rad(t1)) + \
+                                        (j-width//2) * np.sin(np.deg2rad(t1)))
+                        wy = y1 + 0.05*((i+buf) * np.sin(np.deg2rad(t1)) - \
+                                        (j-width//2) * np.cos(np.deg2rad(t1)))
+                        r, c = wy, wx
+                        r, c = int(r*100/self.args.map_resolution), \
+                               int(c*100/self.args.map_resolution)
+                        [r, c] = pu.threshold_poses([r, c],
+                                    self.collison_map.shape)
+                        self.collison_map[r,c] = 1
+                        
         
+        # Set info
+        self.info['time'] = self.timestep
+        self.info['fp_proj'] = fp_proj
+        self.info['fp_explored']= fp_explored
+        self.info['sensor_pose'] = [dx_base, dy_base, do_base]
+        self.info['pose_err'] = [dx_gt - dx_base,
+                                 dy_gt - dy_base,
+                                 do_gt - do_base]
+        
+        if self.timestep%self.args.num_local_steps==0:
+            area, ratio = self.get_global_reward()
+            self.info['exp_reward'] = area
+            self.info['exp_ratio'] = ratio
+        else:
+            self.info['exp_reward'] = None
+            self.info['exp_ratio'] = None
+
+        self.save_position()
         
                 
         reward = self.get_reward(observations)
         if math.isnan(reward):
                 reward = 0
-        self.frames_rgb.append(self.state['rgb'])
-        self.frames_depth.append(self.state['depth'])
-        self.frames_pose.append(self.state['pos'])        
+              
 
-        return {'rgb':np.concatenate(self.frames_rgb,axis=2), 'depth':np.concatenate(self.frames_depth,axis=2), 'pos':np.concatenate(self.frames_pose,axis=0)}, reward, done, info
+        return {'rgb':np.concatenate(self.frames_rgb,axis=0), 'depth':np.concatenate(self.frames_depth,axis=0), 'pos':np.concatenate(self.frames_pose,axis=0)}, reward, done, self.info
 
 
     def get_reward_range(self):
@@ -399,19 +477,6 @@ class MyRLEnvNew(habitat.RLEnv):
         episode_map[episode_map > 0] = 1.
 
         return episode_map
-    
-    def get_sim_location(self):
-        agent_state = super().habitat_env.sim.get_agent_state(0)
-        x = -agent_state.position[2]
-        y = -agent_state.position[0]
-        axis = quaternion.as_euler_angles(agent_state.rotation)[0]
-        if (axis%(2*np.pi)) < 0.1 or (axis%(2*np.pi)) > 2*np.pi - 0.1:
-            o = quaternion.as_euler_angles(agent_state.rotation)[1]
-        else:
-            o = 2*np.pi - quaternion.as_euler_angles(agent_state.rotation)[1]
-        if o > np.pi:
-            o -= 2 * np.pi
-        return x, y, o
     
     def get_sim_location(self):
         agent_state = super().habitat_env.sim.get_agent_state(0)

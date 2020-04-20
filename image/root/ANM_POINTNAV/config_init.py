@@ -39,11 +39,11 @@ def get_config_init():
     config.TASK.SENSORS.append("AGENT_POSITION_SENSOR")
     config.SIMULATOR.TURN_ANGLE = 0.5
     config.SIMULATOR.TILT_ANGLE = 0.5
-    config.SIMULATOR.FORWARD_STEP_SIZE = 0.0125
+    config.SIMULATOR.FORWARD_STEP_SIZE = 0.05
     config.ENVIRONMENT.MAX_EPISODE_STEPS = 500*20
     config.TASK.TOP_DOWN_MAP.MAX_EPISODE_STEPS = 500*20
     config.DATASET.SCENES_DIR = '/data'
-    config.DATASET.SPLIT = 'val'
+    config.DATASET.SPLIT = 'train'
     config.SIMULATOR.SCENE = '/data/gibson/Aldrich.glb'
     #config.SIMULATOR_GPU_ID = 0
     config.freeze()
@@ -58,7 +58,7 @@ def get_config_init():
     config.defrost()
     config.TASK_CONFIG.DATASET.DATA_PATH = '/data/v1/{split}/{split}.json.gz'
     config.TASK_CONFIG.DATASET.SCENES_DIR = '/data'
-    config.TASK_CONFIG.DATASET.SPLIT = 'val'
+    config.TASK_CONFIG.DATASET.SPLIT = 'train'
     config.TASK_CONFIG.SIMULATOR.SCENE = '/data/gibson/Aldrich.glb'
     config.TASK_CONFIG.TASK.GOAL_SENSOR_UUID = 'pos'#'pointgoal_with_gps_compass'
     config.NUM_UPDATES = 50000

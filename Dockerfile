@@ -265,6 +265,8 @@ ENV CHALLENGE_CONFIG_FILE=/habitat-challenge-data/challenge_pointnav2020.local.r
 ADD agent.py /agent.py
 ADD submission.sh /submission.sh
 
+RUN pip install seaborn
+RUN pip install ifcfg
 
 
 # vnc port
