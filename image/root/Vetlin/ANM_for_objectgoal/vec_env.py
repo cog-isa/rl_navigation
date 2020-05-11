@@ -354,14 +354,14 @@ class VectorEnv:
                         env, gym.Env
                     ):
                         # habitat.RLEnv
-                        observations, reward, done, info = env.step(data)
+                        observations, reward, done, info, full_obs, full_info = env.step(data)
                         if auto_reset_done and done:
                             observations, info_new = env.reset()
                             if 'exp_reward' in info.keys():
                                 info_new['exp_reward'] = info['exp_reward']
                                 info_new['exp_ratio'] = info['exp_ratio']
                             info = info_new
-                        connection_write_fn((observations, reward, done, info))
+                        connection_write_fn((observations, reward, done, info, full_obs, full_info))
 
                     elif isinstance(env, habitat.Env):
                         # habitat.Env
@@ -465,10 +465,12 @@ class VectorEnv:
         results = []
         for read_fn in self._connection_read_fns:
             results.append(read_fn())
-        obs, infos = zip(*results)
+            
+#         print(len(*results))
+        obs, infos, full_obs = zip(*results)
 
         self._is_waiting = False
-        return np.stack(obs), infos
+        return np.stack(obs), infos, full_obs
 
     def reset_at(self, index_env: int):
         r"""Reset in the index_env environment in the vector.
@@ -505,6 +507,7 @@ class VectorEnv:
         self._is_waiting = True
         for write_fn, action in zip(self._connection_write_fns, actions):
             write_fn((STEP_COMMAND, action))
+            
 
     def step_wait(self) -> List[Observations]:
         r"""Wait until all the asynchronized environments have synchronized.
@@ -513,8 +516,8 @@ class VectorEnv:
         for read_fn in self._connection_read_fns:
             results.append(read_fn())
         self._is_waiting = False
-        obs, rews, dones, infos = zip(*results)
-        return np.stack(obs), np.stack(rews), np.stack(dones), infos
+        obs, rews, dones, infos, full_obs, full_info = zip(*results)
+        return np.stack(obs), np.stack(rews), np.stack(dones), infos, full_obs, full_info
 
     def step(self, actions: List[int]):
         r"""Perform actions in the vectorized environments.

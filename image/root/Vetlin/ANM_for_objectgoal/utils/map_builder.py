@@ -4,7 +4,7 @@ import utils.depth_utils as du
 
 
 class MapBuilder(object):
-    def __init__(self, params, env):
+    def __init__(self, params):
         self.params = params
         frame_width = params['frame_width']
         frame_height = params['frame_height']
@@ -16,13 +16,15 @@ class MapBuilder(object):
         self.vision_range = params['vision_range']
 
         self.map_size_cm = params['map_size_cm']
-        self.resolution = params['resolution']
+        
         agent_min_z = params['agent_min_z']
         agent_max_z = params['agent_max_z']
         self.z_bins = [agent_min_z, agent_max_z]
         self.du_scale = params['du_scale']
         self.visualize = params['visualize']
         self.obs_threshold = params['obs_threshold']
+        
+        self.resolution = params['resolution']
         
         # replace in the future
         self.semantic_obs_threshold = params['obs_threshold']
@@ -38,18 +40,20 @@ class MapBuilder(object):
         self.agent_height = params['agent_height']
         self.agent_view_angle = params['agent_view_angle']
         
-        scene = env._env._sim.semantic_annotations()
-        instance_id_to_label_id = {int(obj.id.split("_")[-1]): obj.category.index() for obj in scene.objects}
-        
-        self.mapping = np.array([ instance_id_to_label_id[i] for i in range(len(instance_id_to_label_id)) ])
-        self.objectgoal_mapping = {obj.category.name(): obj.category.index() for obj in scene.objects }
-        
+        # prepare semantic mapper
+        self.mapping = [1, 40, 1, 16, 4, 2, 4, 39, 4, 1, 17, 0, 1, 1, 40, 4, 1, 1, 14, 4, 24, 1, 0, 1, -1, 39, 17, 4, 5, 1, 1, 39, 21, 1, 2, 1, 15, 39, 40, 1, 1, 4, 1, 7, 28, 39, 40, 28, 40, 40, 39, 40, 39, 39, 39, 39, 39, 2, 17, 1, 40, 1, 1, 5, 1, 34, 15, 1, 15, 1, 20, 1, 15, 1, 15, 20, 20, 39, 4, 39, 39, 39, 39, 39, 28, 28, 28, 40, 1, 12, 9, 1, 0, 4, 4, 40, 23, 17, 2, 1, 1, 4, 23, 39, 2, 17, 40, 40, 34, 1, 34, 1, 1, 9, 1, 28, 9, 4, 28, 39, 28, 40, 2, 28, 28, 38, 4, 4, 0, 11, 1, 17, 1, 1, 7, 0, 15, 40, 0, 21, 1, 7, 4, 0, 28, 4, 1, 4, 39, 2, 39, 39, 20, 39, 39, 39, 39, 39, 39, 23, 2, 1, 1, 1, 4, 23, 4, 17, 1, 24, 40, 1, 1, 24, 1, 4, 17, 14, 4, 4, 4, 1, 14, 28, 4, 4, 14, 35, 39, 28, 28, 28, 39, 2, 28, 16, 2, 39, 2, 1, 37, 7, 40, 31, 1, 17, 1, 4, 1, 26, 4, 1, 1, 4, 7, 4, 20, 1, 20, 22, 40, 40, 3, 40, 3, 3, 16, 5, 39, 5, 20, 39, 3, 3, 3, 3, 3, 20, 20, 17, 4, 1, 2, 1, 40, 38, 4, 1, 17, 1, 1, 40, 2, 17, 40, 1, 17, 9, 9, 1, 39, 16, 9, 9, 40, 40, 40, 4, 1, 17, 40, 26, 1, 2, 16, 1, 39]
+        self.objectgoal_mapping = {'wall': 1, 'misc': 40, 'stairs': 16, 'door': 4, 'floor': 2, 'objects': 39, 'ceiling': 17, 'void': 0, 'plant': 14, 'column': 24, '': -1, 'table': 5, 'mirror': 21, 'sink': 15, 'cabinet': 7, 'lighting': 28, 'seating': 34, 'towel': 20, 'curtain': 12, 'window': 9, 'shower': 23, 'clothes': 38, 'bed': 11, 'board_panel': 35, 'appliances': 37, 'shelving': 31, 'counter': 26, 'tv_monitor': 22, 'chair': 3}
+        self.goal_mapper = {0: 'chair', 1: 'table', 2: 'picture', 3: 'cabinet', 4: 'cushion', 5: 'sofa', 6: 'bed', 7: 'chest_of_drawers', 8: 'plant', 9: 'sink', 10: 'toilet', 11: 'stool', 12: 'towel', 13: 'tv_monitor', 14: 'shower', 15: 'bathtub', 16: 'counter', 17: 'fireplace', 18: 'gym_equipment', 19: 'seating', 20: 'clothes'}
+
         return
     
     def prepare_semantic_observation(self, semantic):
         return np.take(self.mapping, semantic)
 
-    def update_map(self, depth, current_pose, obs, env):
+    def update_map(self, depth, obs, current_pose):
+        
+#         current_pose = obs['gps']
+        
         with np.errstate(invalid="ignore"):
             depth[depth > self.vision_range * self.resolution] = np.NaN
         point_cloud = du.get_point_cloud_from_z(depth, self.camera_matrix, \
@@ -60,8 +64,7 @@ class MapBuilder(object):
 #         plt.imshow(depth)
         
         prepared_semantic_obs = self.prepare_semantic_observation(obs['semantic'])
-#         semantic_goal = env.current_episode.goals[0].object_category
-        semantic_goal = 'chair'
+        semantic_goal = self.goal_mapper[obs['objectgoal'][0]]
         prepared_semantic_obs = (prepared_semantic_obs == self.objectgoal_mapping[semantic_goal])
         
         semantic_depth = depth * prepared_semantic_obs

@@ -170,7 +170,7 @@ class Exploration_Env(habitat.RLEnv):
 
         # Update ground_truth map and explored area
         fp_proj, self.map, fp_explored, self.explored_map, semantic_fp_proj, self.semantic_map = \
-            self.mapper.update_map(depth, mapper_gt_pose, obs, self._env)
+            self.mapper.update_map(depth, obs, mapper_gt_pose)
 
         # Initialize variables
         self.scene_name = self.habitat_env.sim.config.SCENE
@@ -252,7 +252,7 @@ class Exploration_Env(habitat.RLEnv):
 
         # Update ground_truth map and explored area
         fp_proj, self.map, fp_explored, self.explored_map, semantic_fp_proj, self.semantic_map = \
-                self.mapper.update_map(depth, mapper_gt_pose, obs, self._env)
+                self.mapper.update_map(depth, obs, mapper_gt_pose)
 
 
         # Update collision map
@@ -365,7 +365,7 @@ class Exploration_Env(habitat.RLEnv):
         params['obs_threshold'] = self.args.obs_threshold
         self.selem = skimage.morphology.disk(self.args.obstacle_boundary /
                                              self.args.map_resolution)
-        mapper = MapBuilder(params, self)
+        mapper = MapBuilder(params)
         return mapper
 
 
