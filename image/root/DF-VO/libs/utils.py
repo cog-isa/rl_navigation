@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 import os
 import sys
 sys.path.append(os.getcwd())
-from tool.evaluation.tum_tool.pose_evaluation_utils import quat2mat, rot2quat
+from tool.evaluation.tum_tool.pose_evaluation_utils import *
 
 
 def read_image(path, h, w):
@@ -244,6 +244,33 @@ def save_traj(txt, poses, format="kitti"):
                                     str(i), 
                                     str(tx), str(ty), str(tz),
                                     str(qx), str(qy), str(qz), str(qw)]
+                                    )
+            f.writelines(line_to_write+"\n")
+    print("Trajectory saved.")
+    
+    
+def save_traj_euler(txt, poses, format="kitti"):
+    """Save trajectory (absolute poses) as KITTI odometry file format
+    Args:
+        txt (str): pose text file path
+        poses (array dict): poses, each pose is 4x4 array
+        format (str): trajectory format
+            - kitti: 12 parameters
+            - tum: timestamp tx ty tz qx qy qz qw
+    """
+    with open(txt, "w") as f:
+        for i in poses:
+            pose = poses[i]
+            if format == "kitti":
+                pose = pose.flatten()[:12]
+                line_to_write = " ".join([str(j) for j in pose])
+            elif format == "tum":
+                z, y, x = mat2euler(pose[:3, :3])
+                tx, ty, tz = pose[:3, 3]
+                line_to_write = " ".join([
+                                    str(i), 
+                                    str(tx), str(ty), str(tz),
+                                    str(x), str(y), str(z)]
                                     )
             f.writelines(line_to_write+"\n")
     print("Trajectory saved.")

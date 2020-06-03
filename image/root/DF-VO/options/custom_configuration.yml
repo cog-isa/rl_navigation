@@ -7,8 +7,8 @@ image:
   height: 480
   width: 640
   ext: "png"
-seq: "4"
-result_dir: "results/4"
+seq: "5"
+result_dir: "results/19"
 
 # ----------------------------------------------------------------------------
 # tracking options
@@ -57,7 +57,7 @@ depth:
 # ----------------------------------------------------------------------------
 deep_flow:
   forward_backward: True
-  num_kp: 2000
+  num_kp: 10000
   kp_sel_method: bestN
   network: liteflow  
     # liteflow: LiteFlowNet
@@ -66,8 +66,8 @@ deep_flow:
   precomputed_flow: 
 
 crop:
-  depth_crop: [[0, 1], [0, 1]]
-  flow_crop: [[0, 1], [0, 1]]
+  depth_crop: [[0.1, 0.9], [0.1, 0.9]]
+  flow_crop: [[0.1, 0.9], [0.1, 0.9]]
 
 # ----------------------------------------------------------------------------
 # Visualization
@@ -81,7 +81,7 @@ visualization:
     vis_back_flow: True
     vis_flow_diff: True
   match:
-    kp_num: -1  # -1 for using all
+    kp_num: 200  # -1 for using all
     vis_type: 2
       # None: None
       # 0: draw_match_2_side
