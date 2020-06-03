@@ -3,7 +3,6 @@
 
 import math
 import numpy as np
-from scipy.spatial.transform import Rotation as Rot
 
 def compute_ate(gtruth_file, pred_file):
     gtruth_list = read_file_list(gtruth_file)
@@ -82,8 +81,6 @@ def associate(first_list, second_list,offset,max_difference):
     return matches
 
 def rot2quat(R):
-    return Rot.from_matrix(R).as_quat()
-
     rz, ry, rx = mat2euler(R)
     qw, qx, qy, qz = euler2quat(rz, ry, rx)
     return qw, qx, qy, qz
@@ -122,8 +119,6 @@ def quat2mat(q):
     >>> np.allclose(M, np.diag([1, -1, -1]))
     True
     '''
-    return  Rot.from_quat(q).as_matrix()
-
     w, x, y, z = q
     Nq = w*w + x*x + y*y + z*z
     if Nq < 1e-8:
@@ -186,8 +181,6 @@ def mat2euler(M, cy_thresh=None, seq='zyx'):
     The code appears to be licensed (from the website) as "can be used
     without restrictions".
     '''
-    return Rot.from_matrix(M).as_euler(seq)
-    
     M = np.asarray(M)
     if cy_thresh is None:
         try:
@@ -292,8 +285,6 @@ def euler2mat(z=0, y=0, x=0, isRadian=True):
     assert z>=(-np.pi) and z < np.pi, 'Inapprorpriate z: %f' % z
     assert y>=(-np.pi) and y < np.pi, 'Inapprorpriate y: %f' % y
     assert x>=(-np.pi) and x < np.pi, 'Inapprorpriate x: %f' % x    
-
-    return Rot.from_euler('zyx', [z, y, x]).as_matrix()
     
     Ms = []
     if z:
@@ -353,8 +344,6 @@ def euler2quat(z=0, y=0, x=0, isRadian=True):
         z = ((np.pi)/180.) * z
         y = ((np.pi)/180.) * y
         x = ((np.pi)/180.) * x
-        
-    return Rot.from_euler('zyx', [z, y, x]).as_quat()
     
     z = z/2.0
     y = y/2.0

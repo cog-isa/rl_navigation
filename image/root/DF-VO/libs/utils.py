@@ -152,7 +152,7 @@ def load_poses_from_txt_tum(file_name):
         timestamp, tx, ty, tz, qx, qy, qz, qw = line_split
 
         # quat -> Rotation matrix
-        P[:3, :3] = quat2mat([qw, qx, qy, qz])
+        P[:3, :3] = quat2mat([qx, qy, qz, qw])
         P[:3, 3] = np.asarray([tx, ty, tz])
         
         poses[timestamp] = P
@@ -238,7 +238,7 @@ def save_traj(txt, poses, format="kitti"):
                 pose = pose.flatten()[:12]
                 line_to_write = " ".join([str(j) for j in pose])
             elif format == "tum":
-                qw, qx, qy, qz = rot2quat(pose[:3, :3])
+                qx, qy, qz, qw = rot2quat(pose[:3, :3])
                 tx, ty, tz = pose[:3, 3]
                 line_to_write = " ".join([
                                     str(i), 

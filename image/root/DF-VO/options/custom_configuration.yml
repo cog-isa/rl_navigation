@@ -7,8 +7,8 @@ image:
   height: 480
   width: 640
   ext: "png"
-seq: "11"
-result_dir: "results/11"
+seq: "4"
+result_dir: "results/4"
 
 # ----------------------------------------------------------------------------
 # tracking options
@@ -81,7 +81,7 @@ visualization:
     vis_back_flow: True
     vis_flow_diff: True
   match:
-    kp_num: 100  # -1 for using all
+    kp_num: -1  # -1 for using all
     vis_type: 2
       # None: None
       # 0: draw_match_2_side
