@@ -55,7 +55,6 @@ ENV DISPLAY=:1
 WORKDIR /      
 
 RUN pip install jupyterlab
-#RUN pip install torch torchvision
 RUN pip install torch==1.5.0+cu101 torchvision==0.6.0+cu101 -f https://download.pytorch.org/whl/torch_stable.html
 RUN pip install tensorflow-gpu==1.14
 RUN pip install matplotlib
@@ -159,9 +158,6 @@ RUN cp /usr/lib/x86_64-linux-gnu/libcublas.so /usr/local/cuda-10.1/lib64/
 # Install ROS
 #---------------------------------------------------------------------
 
-#RUN rosdep init
-#RUN rosdep update
-
 RUN apt-get install -y libqt4-dev \
          qt4-dev-tools \ 
          libglew-dev \ 
@@ -243,23 +239,7 @@ RUN curl -sL https://deb.nodesource.com/setup_12.x  | bash -
 RUN apt-get -y install nodejs
 RUN npm install
 
-RUN pip install jupyter bqplot pyyaml ipywidgets
-#RUN jupyter nbextension enable --py --sys-prefix ipywidgets
-RUN pip install jupyros
 ENV PYTHONPATH=/opt/conda/envs/habitat/bin/python3
-RUN echo $PYTHONPATH
-RUN /bin/bash -c "source ~/.bashrc"
-RUN jupyter nbextension enable --py --sys-prefix jupyros
-RUN jupyter labextension install jupyter-ros
-RUN jupyter labextension install @jupyter-widgets/jupyterlab-manager
-
-
-#WORKDIR /root
-#RUN git clone https://github.com/wolfv/jupyter-ros.git
-#WORKDIR /root/jupyter-ros
-#RUN pip install -e .
-RUN jupyter nbextension install --py --symlink --sys-prefix jupyros
-RUN jupyter nbextension enable --py --sys-prefix jupyros
 
 
 ENV CHALLENGE_CONFIG_FILE=/habitat-challenge-data/challenge_pointnav2020.local.rgbd.yaml
@@ -268,6 +248,7 @@ ADD submission.sh /submission.sh
 
 RUN pip install seaborn
 RUN pip install ifcfg
+RUN pip install tensorboardX
 
 
 # vnc port
@@ -276,8 +257,6 @@ EXPOSE 5900
 EXPOSE 8888
 # tensorboard (if any)
 EXPOSE 6006
-# ros (rviz)
-EXPOSE 11311
 # startup
 COPY image /
 COPY habitat-challenge-data /data

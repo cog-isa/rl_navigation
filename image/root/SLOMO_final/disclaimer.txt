@@ -1,0 +1,5 @@
+Thanks for your interest in our dataset.
+
+Please note that we do *not* have any use permissions from the people in these videos. This means that images of people can be used for training only and cannot be published.
+
+Also, if you use this dataset, please cite our work: [Su et al. Deep video deblurring for hand-held cameras. CVPR 2017].
