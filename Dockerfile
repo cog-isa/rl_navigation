@@ -249,7 +249,11 @@ ADD submission.sh /submission.sh
 RUN pip install seaborn
 RUN pip install ifcfg
 RUN pip install tensorboardX
-
+RUN pip install imgaug
+RUN pip install pycocotools
+RUN pip install keras
+RUN pip install cupy-cuda101
+RUN pip install easydict
 
 # vnc port
 EXPOSE 5900
