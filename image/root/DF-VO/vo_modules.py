@@ -1043,5 +1043,5 @@ class VisualOdometry():
             timestamps = sorted(list(self.rgb_d_pose_pair.keys()))
             global_poses_arr = convert_SE3_to_arr(self.global_poses, timestamps)
             save_traj(traj_txt, global_poses_arr, format="tum")
-            traj_euler = "{}/euler_{}.txt".format(self.cfg.result_dir, self.cfg.seq)
-            save_traj_euler(traj_euler, global_poses_arr, format="tum")
+            # traj_euler = "{}/euler_{}.txt".format(self.cfg.result_dir, self.cfg.seq)
+            # save_traj_euler(traj_euler, global_poses_arr, format="tum")

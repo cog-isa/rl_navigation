@@ -258,19 +258,24 @@ def save_traj_euler(txt, poses, format="kitti"):
             - kitti: 12 parameters
             - tum: timestamp tx ty tz qx qy qz qw
     """
+    last_euler = 0, 0, 0
+    last_pos = 0, 0, 0
     with open(txt, "w") as f:
         for i in poses:
             pose = poses[i]
             if format == "kitti":
                 pose = pose.flatten()[:12]
                 line_to_write = " ".join([str(j) for j in pose])
+                f.writelines(line_to_write+"\n")
             elif format == "tum":
                 z, y, x = mat2euler(pose[:3, :3])
                 tx, ty, tz = pose[:3, 3]
-                line_to_write = " ".join([
-                                    str(i), 
-                                    str(tx), str(ty), str(tz),
-                                    str(x), str(y), str(z)]
-                                    )
-            f.writelines(line_to_write+"\n")
+                
+                if i:
+                    deg = (y - last_euler[1])/np.pi*180
+                    dif = np.sqrt(((last_pos - np.array([tx, ty, tz]))**2).sum())
+                    f.write('#{} deg: {}, dif: {}\n'.format(i, deg, dif))
+                
+                last_euler = [x, y, z]
+                last_pos = np.array([tx, ty, tz])
     print("Trajectory saved.")

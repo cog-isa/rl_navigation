@@ -7,8 +7,8 @@ image:
   height: 480
   width: 640
   ext: "png"
-seq: "5"
-result_dir: "results/19"
+seq: "36"
+result_dir: "results/36"
 
 # ----------------------------------------------------------------------------
 # tracking options
@@ -22,7 +22,7 @@ tracking_method: 3
 compute_2d2d_pose:
   ransac:
     reproj_thre: 0.2
-    repeat: 5
+    repeat: 10
   validity:
     method: flow+chei
     min_flow: 5 
@@ -32,7 +32,7 @@ PnP:
     iter: 1000
     reproj_thre: 1
     repeat: 5
-  kp_src: kp_best # [kp_list, kp_best]
+  kp_src: kp_list # [kp_list, kp_best]
 
 # translation scale
 translation_scale:
@@ -41,7 +41,7 @@ translation_scale:
     max_trials: 100
     stop_prob: 0.99
     thre: 1
-  kp_src: kp_best # [kp_list, kp_best]
+  kp_src: kp_list # [kp_list, kp_best]
 
 # ----------------------------------------------------------------------------
 # Deep single-view depth
@@ -57,7 +57,7 @@ depth:
 # ----------------------------------------------------------------------------
 deep_flow:
   forward_backward: True
-  num_kp: 10000
+  num_kp: 20000
   kp_sel_method: bestN
   network: liteflow  
     # liteflow: LiteFlowNet
@@ -88,10 +88,10 @@ visualization:
       # 1: draw_match_temporal
       # 2: both
   trajectory:
-    vis_traj: True
+    vis_traj: False
     draw_scale: 50
     mono_scale: 10 #5.4; 0.2
-    vis_gt_traj: True
+    vis_gt_traj: False
   depth:
     use_tracking_depth: False
     vis_full_depth: False
