@@ -254,6 +254,7 @@ RUN pip install pycocotools
 RUN pip install keras
 RUN pip install cupy-cuda101
 RUN pip install easydict
+RUN pip install pyquaternion
 
 # vnc port
 EXPOSE 5900
