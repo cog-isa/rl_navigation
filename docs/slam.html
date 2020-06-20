@@ -1,0 +1,139 @@
+<!DOCTYPE HTML>
+<!--
+	Hyperspace by HTML5 UP
+	html5up.net | @ajlkn
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html>
+	<head>
+		<title>Generic - Hyperspace by HTML5 UP</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link rel="stylesheet" href="assets/css/main.css" />
+		<noscript><link rel="stylesheet" href="assets/css/noscript.css" /></noscript>
+	</head>
+	<style>
+		div.container {
+		  display:inline-block;
+		  margin-left: auto;
+    	  margin-right: auto;
+		  height: 600px; 
+		  width: 600px; 
+		  text-align:center;
+		}
+
+		div.container2 {
+		  display:inline-block;
+		  margin-left: auto;
+    	  margin-right: auto;
+		  height: 400px; 
+		  width: 400px; 
+		  text-align:center;
+		}
+	
+		p {
+		  text-align:left;
+		}
+	  </style>
+	<body class="is-preload">
+
+		<!-- Header -->
+			<header id="header">
+				<a href="index.html" class="title">Existing approaches</a>
+				<nav>
+					<ul>
+						<li><a href="index.html">Home</a></li>
+						<li><a href="generic.html" class="active">Overview</a></li>
+					</ul>
+				</nav>
+			</header>
+
+		<!-- Wrapper -->
+			<div id="wrapper">
+
+				<!-- Main -->
+					<section id="main" class="wrapper">
+						<div class="inner">
+							<h1 class="major">Simultaneous localization and mapping</h1>
+							
+							<p> Simultaneous Localization and Mapping (SLAM) has been a popular research area in the last two decades in the Computer Vision and Robotics field and has attracted the attention 
+								of high-technological companies. SLAM algorithms build a map of an unknown environment and localize the agent in the map with a substantial focus on real-time operation. In our 
+								work, we used SLAM methods to determine the location of the robot and pass this agent position to the RL part. Many methods based on neural networks and direct computing have 
+								been tested <span class="citation" data-cites="slams"></span>, and we have focused on the <a href="https://arxiv.org/pdf/1809.02989.pdf" data-reference-type="ref" data-reference="rtabmap">RTAB-Map</a> and 
+								<a href="https://arxiv.org/pdf/1610.06475.pdf" data-reference-type="ref" data-reference="orbslam2">ORB-SLAM2</a>.<br /><br />
+
+								ORB SLAM 2: SLAM algorithm that uses the ORB hotspot detector and descriptor, as well as bag-of-words optimization. The algorithm finds key points in the old and new image, 
+								and then uses these key points to determine the offset between frames. The found position is used to update the global map, further adjusting its position prediction on the 
+								map itself. The algorithm does not build a full sparse map of the area, but you can build a complete map using keyframes with key points found in both images (before and after 
+								the step).<br />
+								<div class="container">
+								<a href="#" class="image"><img src="images/dp_orbs_wn.png" alt="11" data-position="top left" width="500" height="500"/></a>
+								<figcaption>Fig.1 - ORB-SLAM2 results without action noise.</figcaption>
+								</div>
+								<div class="container">
+								<a href="#" class="image"><img src="images/dp_orbs_n.png" alt="" data-position="top right" width="500" height="500"/></a>
+								<figcaption>Fig.2 - ORB-SLAM2 results with action noise.</figcaption>
+								</div>
+								
+							</p>
+
+							<p> RTAB-MAP: is a graph-based SLAM method. It uses a visual loop closure detector to lock and adjust complete loops. To associate new and old data, the algorithm compares frames 
+								obtained from different angles. For matching frames, it can use various detectors and keypoint descriptors, including ORB. Each node of the graph (keyframe) contains its 
+								position in 3D space, a color 3D depth map, and a list of keymap points that are found in this image. The edges of the graph reflect the relationship between these nodes. 
+								A link is created only between neighboring nodes or nodes between which loop closure is detected. The loop closure detector searches for the relationship between the keypoint 
+								descriptors of the current keyframe and the key point descriptors found previously. If the number of common key points for the current keyframe and for the frame with the greatest 
+								match exceeds a certain threshold, then the loop closes. In this case, the position of the current frame is refined to match the keyframes with the previous one, and the remaining 
+								loop nodes are optimized. And the corresponding new edge is added. After finding the loop closure, the graph positions are optimized in order to minimize errors in the graph. Makes 
+								a 3D map of the area using the resulting position.<br />
+								<div class="container2">
+								<a href="#" class="image"><img src="images/rtabmap_no_action_noise.png" alt="11" data-position="top left" width="400" height="400"/></a>
+								<figcaption>Fig.1 - RTAB-MAP results without noise.</figcaption>
+								</div>
+								<div class="container2">
+								<a href="#" class="image"><img src="images/rtabmap_action_noise.png" alt="" data-position="top center" width="400" height="400"/></a>
+								<figcaption>Fig.2 - RTAB-MAP results with action noise.</figcaption>
+								</div>
+								<div class="container2">
+								<a href="#" class="image"><img src="images/rtabmap_camera_noise.png" alt="" data-position="top right" width="400" height="400"/></a>
+								<figcaption>Fig.3 - RTAB-MAP results with camera noise.</figcaption>
+								</div>
+
+								<br /><br />
+								Comparing ORB-SLAM 2 we can say that they are very close in 
+								performance, but RTAB-MAP can use various detectors and descriptors depending on the task, so we made a choice in its favor.
+							</p>
+						
+						</div>
+					</section>
+
+			</div>
+
+		<!-- Footer -->
+		<footer id="footer" class="wrapper alt">
+			<div class="inner">
+				<ul class="menu">
+					<li>&copy; All rights reserved.</li><li>Design: <a href="http://rairi.ru/structure/71-ids.html">Intelligent dynamical systems and cognitive research center</a></li>
+				</ul>
+			</div>
+		</footer>
+
+	<!-- Scripts -->
+		<script type="text/javascript" src="http://latex.codecogs.com/latexit.js"></script>
+		<script type="text/x-mathjax-config">
+			MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});
+		</script>
+		<script type="text/javascript"
+		src="http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+		</script>
+		<script src="assets/js/jquery.min.js"></script>
+		<script src="assets/js/jquery.scrollex.min.js"></script>
+		<script src="assets/js/jquery.scrolly.min.js"></script>
+		<script src="assets/js/browser.min.js"></script>
+		<script src="assets/js/breakpoints.min.js"></script>
+		<script src="assets/js/util.js"></script>
+		<script src="assets/js/main.js"></script>
+
+</body>
+</html>
+
+

@@ -1,10 +1,300 @@
-<!DOCTYPE html>
+<!DOCTYPE HTML>
+<!--
+	Hyperspace by HTML5 UP
+	html5up.net | @ajlkn
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
 <html>
-<body>
+	<head>
+		<title>Hyperspace by HTML5 UP</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link rel="stylesheet" href="assets/css/main.css" />
+		<noscript><link rel="stylesheet" href="assets/css/noscript.css" /></noscript>
+	</head>
+	<style>
+		div.container {
+		  display:inline-block;
+		  margin-left: auto;
+    	  margin-right: auto;
+		  height: 200px; 
+		  width: 300px; 
+		  text-align:center;
+		}
+		div.container1 {
+		  display:inline-block;
+		  margin-left: auto;
+    	  margin-right: auto;
+		  height: 200px; 
+		  width: 200px; 
+		  text-align:center;
+		}
+		div.container2 {
+		  display:inline-block;
+		  margin-left: auto;
+    	  margin-right: auto;
+		  height: 200px; 
+		  width: 400px; 
+		  text-align:center;
+		}
 
-<h1 style="color:blue;">A Blue Heading</h1>
 
-<p style="color:red;">A red paragraph.</p>
+		p {
+		  text-align:left;
+		}
+		.rounded {
+		flex: none;
+		width: 100px;
+		height: 100px;
+		border-radius: 50%;
+		object-fit: cover;
+	  	}  
 
-</body>
+	  </style>
+	
+	  
+	<body class="is-preload">
+
+		<!-- Sidebar -->
+			<section id="sidebar">
+				<div class="inner">
+					<nav>
+						<ul>
+							<li><a href="#intro">Abstract</a></li>
+							<li><a href="#zero">Problem formulation</a></li>
+							<!-- <li><a href="#one">Existing approaches</a></li> -->
+							<li><a href="#two">What we have done</a></li>
+							<li><a href="#three">Results</a></li>
+						</ul>
+					</nav>
+				</div>
+			</section>
+
+		<!-- Wrapper -->
+			<div id="wrapper">
+
+				<!-- Intro -->
+					<section id="intro" class="wrapper style1 fullscreen fade-up">
+						<div class="inner">
+							<h1>Learning embodied agents with policy gradients to navigate in realistic environments</h1>
+							<p>Indoor navigation is one of the main tasks in robotic systems. Most decisions in this area rely on ideal agent coordinates and a pre-known room map. However, the high accuracy of indoor localization cannot be achieved in realistic scenarios. For example, the GPS has low accuracy in the room; odometry often gives much noise for accurate positioning, etc. In this paper, we conducted a study of the navigation problem in the realistic Habitat simulator. We proposed a method based on the neural network approach and reinforcement learning that takes into account these factors. The most promising recent approaches were DDPPO and ANM, during the analysis of which a new approach was developed. This method takes into account the non-determinism of the robot's actions and the noise level of data from its sensors.</p>
+							
+
+							<div class="container1">
+							<img class="rounded" src="images/alstar.jpg"alt="" data-position="top right"/>
+							<figcaption>Aleksei Staroverov <br />MIPT</figcaption>
+							</div>
+							<div class="container1">
+							<img class="rounded" src="images/alstar.jpg"alt="" data-position="top right"/>
+							<figcaption>Aleksei Staroverov <br />MIPT</figcaption>
+							</div>
+							<div class="container1">
+							<img class="rounded" src="images/alstar.jpg"alt="" data-position="top right"/>
+							<figcaption>Aleksei Staroverov <br />MIPT</figcaption>
+							</div>
+
+
+							<ul class="actions">
+								<li><a href="#two" class="button scrolly">Learn more</a></li>
+							</ul>
+						</div>
+					</section>
+
+				<!-- Zero -->
+				<section id="zero" class="wrapper style1 fade-up">
+					<div class="inner">
+						
+						<h2>Problem formulation</h2>
+						<div class="container">
+							<a href="#" class="image"><img src="images/point_nav_spec.gif" alt="11" data-position="top center" width="400" height="300"/></a>
+						</div>
+
+						<p>The navigating task to the given coordinates initializes the agent at a random place on the map. The goal is the target coordinates, which are set as 
+							("Go 5 m to the north, 3 m to the west relative to the beginning"). The room map is not available to the agent, and during the evaluation process, the agent can only use the 
+							input from the RGB-D camera for navigation.<br />
+							The agent had four actions: forward, turn left, turn right, and stop. Evaluation occurs when the agent selects the ’STOP’ action. As a metric, SPL (Success weighted by Path Length) 
+							is used. The episode is considered successful if, when calling ’STOP,’ the agent is within 0.36 m (2x radius 
+							of the agent) from the coordinates of the target.<br />
+
+							<span class="math display">\[\label{ddppo}
+								SPL= \frac{1}{N}\sum_{i=1}^{N}S_{i}\frac{l_{i}}{max\left(p_{i},l_{i}\right)} \]</span>
+
+							\(l_i\)</span> = length of shortest path between goal and target for an episode
+							<br />
+							\(p_i\)</span> = length of path taken by agent in an episode
+							<br />
+							\(S_i\)</span> = binary indicator of success in episode<br />
+						</p>
+						<p>The main features of the Habitat environment are:</p>
+						<ul>
+						<li><p>Noisy Actuation and Sensing: Usually, the agent actions were deterministic; i.e., when the agent executes turn-left 30 degrees, it turns precisely 30 degrees, and forward 0.25 m moves the agent exactly 0.25 m forward (modulo collisions). However, no robot moves deterministically; actuation error, surface properties such as friction, and a myriad of other sources of error introduce significant drift over a long trajectory. RGB and Depth sensor noises also exist.</p></li>
+						<li><p>Collision Dynamics and ’Sliding’: Usually, when the agent takes an action that results in a collision, the agent slides along the obstacle as opposed to stopping. This behavior is prevalent in video game engines as it allows for smooth human control; it is also enabled by default in MINOS, Deepmind Lab, AI2 THOR, and Gibson v1. Habitat developers have found that this behavior enables ’cheating’ by learned agents; the agents exploit this sliding mechanism to take an effective path that appears to travel through non-navigable regions of the environment (like walls). Such policies fail disastrously in the real world, where the robot bump sensors force a stop in contact with obstacles. To rectify this issue, sliding on collisions was disable.</p></li>
+						</ul>
+					</div>
+				</section>	
+
+				<!-- One -->
+				<!--
+					<section id="one" class="wrapper style2 spotlights">
+						<div class="inner">
+							<h2>Existing approaches</h2>
+						</div>	
+						<section>
+							<a href="#" class="image"><img src="images/ddppo.jpg" alt="" data-position="center center" /></a>
+							<div class="content">
+								<div class="inner">
+									<h2>DDPPO</h2>
+									<p>Decentralized Distributed Proximal Policy Optimization (DD-PPO), a method for distributed reinforcement learning in resource-intensive simulated environments. 
+										DD-PPO is distributed (uses multiple machines), decentralized (lacks a centralized server), and synchronous (no computation is ever stale), making it conceptually
+										simple and easy to implement. We experiments it on training virtual robots to navigate in Habitat-Sim environment.</p>
+									<ul class="actions">
+										<li><a href="ddppo.html" class="button">Learn more</a></li>
+									</ul>
+								</div>
+							</div>
+						</section>
+						<section>
+							<a href="#" class="image"><img src="images/anm.jpg" alt="" data-position="top center" /></a>
+							<div class="content">
+								<div class="inner">
+									<h2>ANM</h2>
+									<p>The Active Neural Mapping (ANM) algorithm proposed a modular navigational model that leverages the strengths of classical and learning-based
+									    navigational methods. The main idea of ANM is to split the agent into fourcomponents: Mapper, Global policy, Planner, and Local policy.</p>
+									<ul class="actions">
+										<li><a href="anm.html" class="button">Learn more</a></li>
+									</ul>
+								</div>
+							</div>
+						</section>
+						<section>
+							<a href="#" class="image"><img src="images/slam.jpg" alt="" data-position="25% 25%" /></a>
+							<div class="content">
+								<div class="inner">
+									<h2>SLAM</h2>
+									<p> SLAM algorithms builda map of an unknown environment and localize the agent in the map with asubstantial focus on real-time operation. 
+										In our work, we used SLAM methods to determine the location of the robot and pass this agent position to the RL part.</p>
+									<ul class="actions">
+										<li><a href="slam.html" class="button">Learn more</a></li>
+									</ul>
+								</div>
+							</div>
+						</section>
+					-->	
+					</section>
+				
+				<!-- Two -->
+					<section id="two" class="wrapper style3 fade-up">
+						<div class="inner">
+							<h2>What we have done</h2>
+							<p>Our base idea was to take advantage of DDPPO and SLAM methods. DDPPO, as authors stated, could achieve almost ideal 
+								performance even with the presence of all kinds of noises. The only problem is that it demands of coordinates of the 
+								agent because of the goal state is formulated as coordinate in area. As the most promising SLAM methods, we have 
+								tried RTAB-MAP and ORBSLAM2. Despite the fact that they both could build a decent 3D map and localize agent, they 
+								fail to do it in noisy conditions and with huge turn angle per step (10 degrees) and get lost. The other approach 
+								is to use neural networks. In its pure state with only CNN + FC layers, we cannot achieve acceptable loss. 
+							</br>
+								The thing that has mostly worked for our task is the DF-VO. The DF-VO is a  monocular visual odometry (VO) algorithm that 
+								leverages geometry-based methods and deep learning. Its advantage is that most existing VO/SLAM systems with 
+								superior performance are based on geometry and have to be carefully designed for different application scenarios. 
+								Moreover, most monocular systems suffer from scale-drift issue. Some recent deep learning works learn VO in an 
+								end-to-end manner but the performance of these deep systems is still not comparable to geometry-based methods.  
+								Specifically,  DF-VO train two convolutional neural networks (CNNs) for estimating single-view depths and two-view 
+								optical flows as intermediate outputs. With the deep predictions, DF-VO design a simple but robust frame-to-frame 
+								VO algorithm (DF-VO)  which outperforms pure deep learning-based and geometry-based method.</p>
+							
+							<!--
+							<div class="features">
+								<section>
+									<span class="icon solid major fa-code"></span>
+									<h3>Vlocnet Architecture</h3>
+									<p>Phasellus convallis elit id ullam corper amet et pulvinar. Duis aliquam turpis mauris, sed ultricies erat dapibus.</p>
+								</section>
+								<section>
+									<span class="icon solid major fa-code"></span>
+									<h3>Visual Odometry (DF-VO)</h3>
+									<p>Phasellus convallis elit id ullam corper amet et pulvinar. Duis aliquam turpis mauris, sed ultricies erat dapibus.</p>
+								</section>
+								<section>
+									<span class="icon solid major fa-code"></span>
+									<h3>Super-SloMo</h3>
+									<p>Phasellus convallis elit id ullam corper amet et pulvinar. Duis aliquam turpis mauris, sed ultricies erat dapibus.</p>
+								</section>
+								<section>
+									<span class="icon solid major fa-code"></span>
+									<h3>Mask R-CNN</h3>
+									<p>Phasellus convallis elit id ullam corper amet et pulvinar. Duis aliquam turpis mauris, sed ultricies erat dapibus.</p>
+								</section>
+							
+		
+							</div>
+							
+
+							<ul class="actions">
+								<li><a href="what_we_do.html" class="button">Learn more</a></li>
+							</ul>
+							-->	
+						</div>
+					</section>
+
+				<!-- Three -->
+				<section id="three" class="wrapper style4 fade-up">
+					<div class="inner">
+						<h2>Results</h2>
+						<p>Extensive work has been done to study and test algorithms for the RL agent in the 
+							Habitat environment. We tried to train state of the art solutions for navigation 
+							and building maps on the premises. Focusing on the articles DF-VO and DDPPO, we 
+							propose a combined method for the Habitat environment with realistic rules with 
+							noise in actions and sensors.</p>
+						<div class="container2">
+							<a href="#" class="image"><img src="images/norm1.gif" alt="11" data-position="top center" width="300" height="300"/></a>
+						<figcaption>DDPPO + DF-VO</figcaption>
+						</div>
+						<div class="container2">
+							<a href="#" class="image"><img src="images/norm2.gif" alt="11" data-position="top center" width="300" height="300"/></a>
+						<figcaption>DDPPO + DF-VO</figcaption>
+						</div>
+					</br>
+						<div class="container2">
+							<a href="#" class="image"><img src="images/sredne1.gif" alt="11" data-position="top center" width="300" height="300"/></a>
+						<figcaption>DDPPO + DF-VO</figcaption>
+						</div>
+						<div class="container2">
+							<a href="#" class="image"><img src="images/sredne2.gif" alt="11" data-position="top center" width="300" height="300"/></a>
+						<figcaption>DDPPO + DF-VO</figcaption>
+						</div>
+
+
+					</div>
+				</section>
+
+
+			
+			</div>
+
+		<!-- Footer -->
+			<footer id="footer" class="wrapper style1-alt">
+				<div class="inner">
+					<ul class="menu">
+						<li>&copy; Untitled. All rights reserved.</li><li>Design: <a href="http://rairi.ru/structure/71-ids.html">Intelligent dynamical systems and cognitive research center</a></li>
+					</ul>
+				</div>
+			</footer>
+
+		<!-- Scripts -->
+			<script type="text/javascript" src="http://latex.codecogs.com/latexit.js"></script>
+			<script type="text/x-mathjax-config">
+				MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});
+			</script>
+			<script type="text/javascript"
+			src="http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+			</script>
+			<script src="assets/js/jquery.min.js"></script>
+			<script src="assets/js/jquery.scrollex.min.js"></script>
+			<script src="assets/js/jquery.scrolly.min.js"></script>
+			<script src="assets/js/browser.min.js"></script>
+			<script src="assets/js/breakpoints.min.js"></script>
+			<script src="assets/js/util.js"></script>
+			<script src="assets/js/main.js"></script>
+
+	</body>
 </html>

@@ -261,13 +261,13 @@ class FrameDrawer():
     def main(self, vo):
         start_time = time()
         # Trajectory visualization
-        if vo.cfg.visualization.trajectory.vis_traj:
-            vo.drawer.draw_traj(
-                    pred_poses=vo.global_poses,
-                    gt_poses=vo.gt_poses,
-                    traj_cfg=vo.cfg.visualization.trajectory,
-                    tracking_mode=vo.tracking_mode
-                    )
+        #if vo.cfg.visualization.trajectory.vis_traj:
+        #    vo.drawer.draw_traj(
+        #            pred_poses=vo.global_poses,
+        #            gt_poses=vo.gt_poses,
+        #            traj_cfg=vo.cfg.visualization.trajectory,
+        #            tracking_mode=vo.tracking_mode
+        #            )
 
         # Draw correspondence
         tmp_start_time = time()
@@ -394,8 +394,8 @@ class FrameDrawer():
             img_path = os.path.join(img_dir_path, "{:06d}.jpg".format(vo.cur_data['id']))
             cv2.imwrite(img_path, vo.drawer.img)
         
-        cv2.imshow('DF-VO', vo.drawer.img)
-        cv2.waitKey(1)
+        #cv2.imshow('DF-VO', vo.drawer.img)               !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        #cv2.waitKey(1)                                   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
         vo.drawer.interface()
 

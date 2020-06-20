@@ -1,0 +1,104 @@
+<!DOCTYPE HTML>
+<!--
+	Hyperspace by HTML5 UP
+	html5up.net | @ajlkn
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html>
+	<head>
+		<title>Generic - Hyperspace by HTML5 UP</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link rel="stylesheet" href="assets/css/main.css" />
+		<noscript><link rel="stylesheet" href="assets/css/noscript.css" /></noscript>
+	</head>
+	<style>
+		div.container {
+		  display:inline-block;
+		  margin-left: auto;
+    	  margin-right: auto;
+		  height: 700px; 
+		  width: 1400px; 
+		  text-align:center;
+		}
+	
+		p {
+		  text-align:left;
+		}
+	  </style>
+	<body class="is-preload">
+
+		<!-- Header -->
+			<header id="header">
+				<a href="index.html" class="title">Existing approaches</a>
+				<nav>
+					<ul>
+						<li><a href="index.html">Home</a></li>
+						<li><a href="generic.html" class="active">Overview</a></li>
+					</ul>
+				</nav>
+			</header>
+
+		<!-- Wrapper -->
+			<div id="wrapper">
+
+				<!-- Main -->
+					<section id="main" class="wrapper">
+						<div class="inner">
+							
+							<h1 class="major">Active Neural Mapping</h1>
+							<p>The Active Neural Mapping (<a href="https://openreview.net/pdf?id=HklXn1BKDH" data-reference-type="ref" data-reference="anm">ANM</a>) algorithm proposed a modular navigational model that leverages the strengths of classical and learning-based navigational methods. 
+								The main idea of ANM is to split the agent into four components: Mapper, Global policy, Planner, and Local policy.<br />
+							The use of learning in the SLAM module provides flexibility to input modality, learned global policy can exploit regularities in layouts of real-world environments, 
+							learned local policies can use visual feedback to exhibit more robust behavior. At the same time, hierarchical and modular design and use of analytical planning significantly
+							 cut down the search space during training, leading to better performance as well as sample efficiency.<br />
+							<br />
+							</p>
+							<ul>
+							<li><p>Mapper builds a map of the investigated room and determines the location of the agent on this map. The map has dimensions of
+								$2 \times M \times M$. Where the first channel is the probability of finding an obstacle at a particular point, and the second channel is the level of how much this cell is explored on the map. At each step, Mapper receives current data from an RGB camera, current and previous data from GPS and compass sensors with some noise imposed on them, likewise last state of the map. On output, this module gives the constructed map and the current coordinates of the agent with noise reduction<br />
+							</p></li>
+							<li><p>Global policy is used in the task to build a global goal for the algorithm. This module sets the algorithm a global goal where move. For example, if the agent sees that the point where he needs to get is outside of the wall from him, then global policy paves his way to bypass the obstacle. As an input to the Global policy comes map, coordinates, obtained from the mapper module, also many points that the agent has already visited. The global policy output gives the coordinates of the current global goal for the agent<br />
+							</p></li>
+							<li><p>Planner receives a map, current position and global target. Based on the data received, the algorithm uses Fast Marching Method and generates a local coordinate near the agent to get to the point issued by global policy in the most optimal way. All unexplored points on the map are replaced by empty space.<br />
+							</p></li>
+							<li><p>Local policy is used to obtain a specific agent action and editing this action depending on a minor obstacles in front of the agent. It receives an RGB image and a local target from a planner. As output gives a specific action for the agent.</p></li>
+							</ul>
+
+							<div class="container">
+							<a href="#" class="image"><img src="images/dostroil_stenku.gif" alt="11" data-position="top center" width="700" height="500"/></a>
+							<figcaption>Fig.1 - ANM results with noise.</figcaption>
+							</div>
+
+						</div>
+					</section>
+
+			</div>
+
+		<!-- Footer -->
+			<footer id="footer" class="wrapper alt">
+				<div class="inner">
+					<ul class="menu">
+						<li>&copy; All rights reserved.</li><li>Design: <a href="http://rairi.ru/structure/71-ids.html">Intelligent dynamical systems and cognitive research center</a></li>
+					</ul>
+				</div>
+			</footer>
+
+		<!-- Scripts -->
+			<script type="text/javascript" src="http://latex.codecogs.com/latexit.js"></script>
+			<script type="text/x-mathjax-config">
+				MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});
+			</script>
+			<script type="text/javascript"
+			src="http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+			</script>
+			<script src="assets/js/jquery.min.js"></script>
+			<script src="assets/js/jquery.scrollex.min.js"></script>
+			<script src="assets/js/jquery.scrolly.min.js"></script>
+			<script src="assets/js/browser.min.js"></script>
+			<script src="assets/js/breakpoints.min.js"></script>
+			<script src="assets/js/util.js"></script>
+			<script src="assets/js/main.js"></script>
+
+	</body>
+</html>

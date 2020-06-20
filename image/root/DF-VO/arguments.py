@@ -65,9 +65,9 @@ def init_config():
     config.SIMULATOR.TURN_ANGLE = 10
     config.SIMULATOR.TILT_ANGLE = 10
     config.SIMULATOR.FORWARD_STEP_SIZE = 0.25
-    config.ENVIRONMENT.MAX_EPISODE_STEPS = 500*10
-    config.TASK.TOP_DOWN_MAP.MAX_EPISODE_STEPS = 500*10
-    config.DATASET.SCENES_DIR = '/data'
+    config.ENVIRONMENT.MAX_EPISODE_STEPS = 500
+    config.TASK.TOP_DOWN_MAP.MAX_EPISODE_STEPS = 500
+    config.DATASET.SCENES_DIR = '/data/'
     config.DATASET.SPLIT = 'train'
     #config.SIMULATOR.SCENE = '/data/gibson/Aldrich.glb'
     #config.SIMULATOR_GPU_ID = 0

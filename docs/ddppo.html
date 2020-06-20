@@ -1,0 +1,130 @@
+<!DOCTYPE HTML>
+<!--
+	Hyperspace by HTML5 UP
+	html5up.net | @ajlkn
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html>
+	<head>
+		<title>Generic - Hyperspace by HTML5 UP</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link rel="stylesheet" href="assets/css/main.css" />
+		<noscript><link rel="stylesheet" href="assets/css/noscript.css" /></noscript>
+	</head>
+	<style>
+		div.container {
+		  display:inline-block;
+		  margin-left: auto;
+    	  margin-right: auto;
+		  height: 700px; 
+		  width: 1400px; 
+		  text-align:center;
+		}
+
+		div.container2 {
+		  display:inline-block;
+		  margin-left: auto;
+    	  margin-right: auto;
+		  height: 400px; 
+		  width: 400px; 
+		  text-align:center;
+		}
+	
+		p {
+		  text-align:left;
+		}
+	  </style>
+	<body class="is-preload">
+
+		<!-- Header -->
+			<header id="header">
+				<a href="index.html" class="title">Existing approaches</a>
+				<nav>
+					<ul>
+						<li><a href="index.html">Home</a></li>
+						<li><a href="generic.html" class="active">Overview</a></li>
+					</ul>
+				</nav>
+			</header>
+			
+
+		<!-- Wrapper -->
+			<div id="wrapper">
+
+				<!-- Main -->
+					<section id="main" class="wrapper">
+						<div class="inner">
+							<h1 class="major">DDPPO</h1>
+							<p>In reinforcement learning (RL) algorithms, one of the main ideas is asynchrony. Asynchronous distribution is a very demanding process, even minor errors can lead to agent failure.
+								This makes RL very different from supervised learning, where the synchronous distribution of learning is done through data parallelism. The values of the new parameters are 
+								calculated as the weighted average of the gradients of all the workers. This parallelism provides a linear acceleration of learning speeds up to 32,000 GPUs. DDPPO adapted this 
+								idea for on-policy RL algorithms (<a href="https://arxiv.org/pdf/1911.00357.pdf" data-reference-type="ref" data-reference="ddppo">ddppo</a>). 
+								<span class="math display">\[\label{ddppo}
+							\theta_{n}^{k+1}= ParamUpdate\left(\theta_{n}^{k},AllReduce(\triangledown_{\theta}J^{PPO}(\theta_{1}^k),...,\triangledown_{\theta}J^{PPO}(\theta_{N}^k)) \right )\]</span></p>
+							<p>The core of DDPPO is the Proximal Policy Optimization (PPO) algorithm<span class="citation" data-cites="ppo"></span>. The PPO method for training an RL agent based on a gradient 
+								descent over a policy agent. There are two versions of this algorithm. The first based on Trust region policy optimization (TRPO)<span class="citation" data-cites="trpo"></span>
+								, second based on the clipping method. The first method is to move the gradient vector so long that the Kullback Leibler distance between policy at the end of the gradient 
+								vector and the policy at the current point is minimal. A second method is to limit how much the gradient vector can change 
+								(<a href="https://arxiv.org/pdf/1707.06347.pdf" data-reference-type="ref" data-reference="ppo">ppo</a>). <span class="math display">\[\label{ppo}
+							J^{PPO}(\theta)= E_{t}\left[min(r_{t}(\theta)\hat{A}_{t} ,clip(r_{t}(\theta),1-\varepsilon,1+\varepsilon  )\hat{A}_{t})\right]\]</span></p>
+							<p>Clip means that if the gradient has changed more than (1 + eps) or (1 - eps) times, then we equate the new gradient with the nearest border. DDPPO is an end to end algorithm 
+								that trained in the Habitat environment. As an input, the agent uses data from the RGB-D camera and GPS + Compass sensor. Then all input pass through the neural network 
+								SE-Resnext-101 <span class="citation" data-cites="seresnet"></span> and 1024 layers of LSTM <span class="citation" data-cites="lstm"></span>. The agent, represented by 
+								Facebook, went through a long training process and showed good results. We believe that this algorithm can be successfully used as an integral part of the learning process. 
+								Its main disadvantage is that in the absence of a GPS + Compass sensor, the SPL metric drops from 0.98 to 0 at 100 million steps and to 0.15 at 2.5 billion steps.</p>
+								
+								<div class="container2">
+								<a href="#" class="image"><img src="images/ddppos_2_angleS.png" alt="11" data-position="top left" width="400" height="400"/></a>
+								<figcaption>Fig.1 - DDPPO results with noise <br />(2 degree angle).</figcaption>
+								</div>
+								<div class="container2">
+								<a href="#" class="image"><img src="images/ddppos_10_angleS.png" alt="" data-position="top center" width="400" height="400"/></a>
+								<figcaption>Fig.2 - DDPPO results with noise <br />(10 degree angle).</figcaption>
+								</div>
+								<div class="container2">
+								<a href="#" class="image"><img src="images/ddppos_wn.png" alt="" data-position="top right" width="400" height="400"/></a>
+								<figcaption>Fig.3 - DDPPO results without noise <br />(2 degree angle).</figcaption>
+								</div>
+
+								<br /><br /><br /><br />
+								<div class="container">
+								<a href="#" class="image"><img src="images/ddppo_res.png" alt="" data-position="top center" width="700" height="400"/></a>
+								<figcaption>Fig.4 - The Success rate metric that algorithm achieve after 100 million steps.</figcaption>
+								</div>
+
+
+
+
+						</div>
+					</section>
+
+			</div>
+
+		<!-- Footer -->
+		<footer id="footer" class="wrapper alt">
+			<div class="inner">
+				<ul class="menu">
+					<li>&copy; All rights reserved.</li><li>Design: <a href="http://rairi.ru/structure/71-ids.html">Intelligent dynamical systems and cognitive research center</a></li>
+				</ul>
+			</div>
+		</footer>
+
+	<!-- Scripts -->
+		<script type="text/javascript" src="http://latex.codecogs.com/latexit.js"></script>
+		<script type="text/x-mathjax-config">
+			MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});
+		</script>
+		<script type="text/javascript"
+		src="http://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+		</script>
+		<script src="assets/js/jquery.min.js"></script>
+		<script src="assets/js/jquery.scrollex.min.js"></script>
+		<script src="assets/js/jquery.scrolly.min.js"></script>
+		<script src="assets/js/browser.min.js"></script>
+		<script src="assets/js/breakpoints.min.js"></script>
+		<script src="assets/js/util.js"></script>
+		<script src="assets/js/main.js"></script>
+
+</body>
+</html>

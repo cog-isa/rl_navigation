@@ -385,13 +385,13 @@ class VisualOdometry():
                 assert False, "No precomputed depths nor pretrained depth model"
 
         # Load GT pose
-        self.gt_poses = self.get_gt_poses()
+        #self.gt_poses = self.get_gt_poses()
 
         # Set drawer
-        self.drawer.get_traj_init_xy(
-                        vis_h=self.drawer.h,
-                        vis_w=self.drawer.w*0.5,
-                        gt_poses=self.gt_poses)
+       # self.drawer.get_traj_init_xy(
+       #                 vis_h=self.drawer.h,
+       #                 vis_w=self.drawer.w*0.5,
+       #                 gt_poses=self.gt_poses)
 
     def load_depth(self, depth_seq_dir, img_id, depth_src,
                    resize=None, dataset="kitti"):
@@ -952,7 +952,7 @@ class VisualOdometry():
         # Main
         print("==> Start VO")
         main_start_time = time()
-        start_frame = int(input("Start with frame: "))
+        start_frame = 0#int(input("Start with frame: "))
 
         for img_id in tqdm(range(start_frame, len_seq)):
             self.tracking_mode = "Ess. Mat."
