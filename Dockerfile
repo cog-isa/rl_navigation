@@ -124,7 +124,6 @@ RUN DIR1=$(pwd) && \
     git clone https://github.com/ducha-aiki/ORB_SLAM2-PythonBindings && \
     cd ${MAINDIR}/ORB_SLAM2 && \
     sed -i "s,cmake .. -DCMAKE_BUILD_TYPE=Release,cmake .. -DCMAKE_BUILD_TYPE=Release -DEIGEN3_INCLUDE_DIR=${MAINDIR}/eigen3_installed/include/eigen3/ -DCMAKE_INSTALL_PREFIX=${MAINDIR}/ORBSLAM2_installed ,g" build.sh
-    #cp ${MAINDIR}/ORB_SLAM2/Vocabulary/ORBvoc.txt ${DIR1}/data/
 
 RUN /bin/bash -c "source ~/.bashrc"
 
@@ -176,8 +175,6 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y \
     && apt-get clean
 
 RUN pip install -U catkin_tools 
-
-#RUN apt-get install -y python3-catkin-pkg python3-rosdistro python3-rospkg
 RUN apt install -y python-rosinstall \
          python-rosinstall-generator \ 
          python-wstool
@@ -205,7 +202,6 @@ RUN /bin/bash -c '. /opt/ros/melodic/setup.bash; cd /root/catkin_ws; catkin_make
 
 RUN cp /usr/lib/x86_64-linux-gnu/libcudnn* /    
 
-#RUN rm /root/catkin_ws/src/tx2_fcnn_node/Thirdparty/fcrn-inference/jetson-utils/XML*
 RUN rm /root/catkin_ws/src/tx2_fcnn_node/launch/cnn_only*
 COPY requirements/cnn_only.launch /root/catkin_ws/src/tx2_fcnn_node/launch
 COPY requirements/habitat_rtabmap.launch /root/catkin_ws/src/tx2_fcnn_node/launch
@@ -217,20 +213,6 @@ wget http://pathplanning.ru/public/ECMR-2019/engines/resnet_nonbt_shortcuts_320x
 source /opt/ros/melodic/setup.bash; \
 source /root/catkin_ws/devel/setup.bash; '
 RUN echo "source /root/catkin_ws/devel/setup.bash" >> /root/.bashrc
-#rosrun tx2_fcnn_node fcrn_engine_builder --uff=/root/catkin_ws/src/tx2_fcnn_node/engine/resnet_nonbt_shortcuts_320x240.uff --uffInput=tf/Placeholder   --output=tf/Reshape --height=240 --width=320 --engine=./test_engine.trt --fp16
-#cp /test_engine.trt /root/catkin_ws/src/tx2_fcnn_node/engine/
-#cd /root/catkin_ws; roslaunch tx2_fcnn_node habitat_rtabmap.launch
-
-#export PYTHONPATH=/opt/conda/bin/python
-#machine_ip=(`hostname -I`)
-#export ROS_IP=${machine_ip[0]}
-#rostopic list
-#rostopic echo /depth/image
-
-#rtabmap-databaseViewer ~/.ros/rtabmap.db
-#roslaunch rtabmap_ros rtabmap.launch localization:=true rviz:=true
-#rosbag info 2020-03-10-11-59-07.bag 
-#rosbag record -a
 
 RUN apt install -y ros-melodic-rtabmap-ros
 
@@ -243,18 +225,17 @@ ENV PYTHONPATH=/opt/conda/envs/habitat/bin/python3
 
 
 ENV CHALLENGE_CONFIG_FILE=/habitat-challenge-data/challenge_pointnav2020.local.rgbd.yaml
-ADD agent.py /agent.py
-ADD submission.sh /submission.sh
 
 RUN pip install seaborn
 RUN pip install ifcfg
 RUN pip install tensorboardX
 RUN pip install imgaug
 RUN pip install pycocotools
-RUN pip install keras
+RUN pip install keras==2.0.8
 RUN pip install cupy-cuda101
 RUN pip install easydict
 RUN pip install pyquaternion
+RUN pip install ipywidgets
 
 # vnc port
 EXPOSE 5900
@@ -264,8 +245,8 @@ EXPOSE 8888
 EXPOSE 6006
 # startup
 COPY image /
-COPY habitat-challenge-data /data
-ENV HOME /root
+COPY habitat-challenge-data /data_config
+ENV HOME /
 ENV SHELL /bin/bash
 
 # no password and token for jupyter
