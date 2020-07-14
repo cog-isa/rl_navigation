@@ -22,7 +22,7 @@ sudo docker run --runtime=nvidia -it --rm --name habitat_docker \
 -env="XAUTHORITY=$XAUTH" \
 --volume="$XAUTH:$XAUTH" \
 --privileged \
--p $1:5900 -p $2:8888 -p $3:11311 -e jup_port=$2 -e vnc_port=$1 -e ros_port=$3 \
--v /home/askrynnik/alstar_demo/data/scene_datasets/gibson:/data/gibson \
--v  /home/askrynnik/alstar_demo/data/datasets/pointnav/gibson/v1:/data/v1  habitat_docker
+-p $1:5900 -p $2:8888 -e jup_port=$2 -e vnc_port=$1 \
+-v /data_hdd1/alex_star/habitat_data/data/:/data \
+-v /home/minerl/Desktop/rl_navigation/root/:/root habitat_docker
 ```
