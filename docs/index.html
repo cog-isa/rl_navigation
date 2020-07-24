@@ -17,8 +17,8 @@
 		  display:inline-block;
 		  margin-left: auto;
     	  margin-right: auto;
-		  height: 300px; 
-		  width: 300px; 
+		  height: 400; 
+		  width: 400; 
 		  text-align:center;
 		}
 		div.container1 {
@@ -37,20 +37,19 @@
 		  width: 800px; 
 		  text-align:center;
 		}
-
-
+		div.container3 {
+		  display:inline-block;
+		  margin-left: auto;
+    	  margin-right: auto;
+		  height: 300; 
+		  width: 760; 
+		  text-align:center;
+		}
 		p {
 		  text-align:left;
 		}
-		.rounded {
-		flex: none;
-		width: 100px;
-		height: 100px;
-		border-radius: 50%;
-		object-fit: cover;
-	  	}  
-
 	  </style>
+
 	<body class="is-preload">
 
 		<!-- Wrapper -->
@@ -72,16 +71,24 @@
 
 							<br/>
 								<div class="container1">
-								<img class="rounded" src="images/alstar.jpg"alt="" data-position="top right"/>
+								<!--<img class="rounded" src="images/alstar.jpg"alt="" data-position="top right"/>-->
 								<figcaption>Aleksei Staroverov <br />MIPT</figcaption>
 								</div>
 								<div class="container1">
-								<img class="rounded" src="images/alstar.jpg"alt="" data-position="top right"/>
-								<figcaption>Aleksei Staroverov <br />MIPT</figcaption>
+								<!--<img class="rounded" src="images/alstar.jpg"alt="" data-position="top right"/>-->
+								<figcaption>Vladislav Vetlin <br />HSE</figcaption>
 								</div>
 								<div class="container1">
-								<img class="rounded" src="images/alstar.jpg"alt="" data-position="top right"/>
-								<figcaption>Aleksei Staroverov <br />MIPT</figcaption>
+								<!--<img class="rounded" src="images/alstar.jpg"alt="" data-position="top right"/>-->
+								<figcaption>Stepan Makarenko <br />MIPT</figcaption>
+								</div>
+								<div class="container1">
+								<!--<img class="rounded" src="images/alstar.jpg"alt="" data-position="top right"/>-->
+								<figcaption>Anton Naumov <br />HSE</figcaption>
+								</div>
+								<div class="container1">
+								<!--<img class="rounded" src="images/alstar.jpg"alt="" data-position="top right"/>-->
+								<figcaption>Aleksandr I. Panov <br />MIPT</figcaption>
 								</div>
 								
 
@@ -91,18 +98,13 @@
 									<h3>References</h3>
 								</header>
 								<div class="content">
-						
 									<ul class="actions fit">
 										<li><a href=""class="button primary fit">Paper</a></li>
-										<li><a href="" class="button primary fit">Code</a></li>
+										<li><a href="https://github.com/cog-isa/rl_navigation" class="button primary fit">Code</a></li>
 									</ul>	
 
 								</div>
 							</section>
-
-							<ul class="actions stacked">
-								<li><a href="#first" class="button big wide smooth-scroll-middle">Get Started</a></li>
-							</ul>
 						</div>
 	
 					</section>
@@ -110,12 +112,14 @@
 				<!-- Six -->
 				<section class="wrapper style1 align-center">
 					<div class="inner">
-						<h2>Task formulation</h2>
 
-							<!-- Two -->
-							<section class="spotlight style1 orient-right content-align-left image-position-right onscroll-image-fade-in" id="first">
+						<h2>Task formulation</h2>
+						<div class="container">
+							<img src="images/ezgif.com-resize.gif" alt="" data-position="top center" width="400" height="400" />
+						</div>
+
 								<div class="content">
-									<p>The navigating task to the given coordinates initializes the agent at a random place on the map. The goal is the 
+									<p>	The navigating task to the given coordinates initializes the agent at a random place on the map. The goal is the 
 										target coordinates, which are set as ("Go 5 m to the north, 3 m to the west relative to the beginning"). The room 
 										map is not available to the agent, and during the evaluation process, the agent can only use the input from the 
 										RGB-D camera for navigation.
@@ -125,17 +129,8 @@
 										considered successful if, when calling 'STOP,' the agent is within 0.36 m (2x radius of the agent) from the 
 										coordinates of the target.</p>
 								</div>
-								<div class="container">
-									<img src="images/point_nav_spec.gif" alt="" data-position="top center" width="500" height="400" />
-								</div>
-							</section>
-							
-
-							</section>
-
 
 						</div>
-					</div>
 				</section>	
 
 				
@@ -143,7 +138,7 @@
 					<section class="wrapper style1 align-center">
 						<div class="inner">
 							<h2>Results</h2>
-							<br/><br/>
+					
 
 
 						<p>As the overall approach, we used DF-VO as a localization module and trained DDPPO with its coordinates. This approach gave 
@@ -157,518 +152,175 @@
 							to the localization error.<p>
 						
 
-						<!-- Gallery -->
-						<div class="gallery style2 medium lightbox onscroll-fade-in">
-							<article>
-								<a href="images/! 0_.png" class="image">
-									<img src="images/! 0_.png" alt="" />
-								</a>
-								<div class="caption">
-									<h3>Trajectory 1</h3>
-									<p>DDPPO trajectory with ground truth pos. Left images with noises, right without noises.</p>
-									<ul class="actions fixed">
-										<li><span class="button small">Details</span></li>
-									</ul>
-								</div>
-							</article>
-							<article>
-								<a href="images/! 1_.png" class="image">
-									<img src="images/! 1_.png" alt="" />
-								</a>
-								<div class="caption">
-									<h3>Trajectory 2</h3>
-									<p>DDPPO trajectory with ground truth pos. Left images with noises, right without noises.</p>
-									<ul class="actions fixed">
-										<li><span class="button small">Details</span></li>
-									</ul>
-								</div>
-							</article>
-							<article>
-								<a href="images/! 2_.png" class="image">
-									<img src="images/! 2_.png" alt="" />
-								</a>
-								<div class="caption">
-									<h3>Trajectory 3</h3>
-									<p>DDPPO trajectory with ground truth pos. Left images with noises, right without noises.</p>
-									<ul class="actions fixed">
-										<li><span class="button small">Details</span></li>
-									</ul>
-								</div>
-							</article>
-							<article>
-								<a href="images/! 3_.png" class="image">
-									<img src="images/! 3_.png" alt="" />
-								</a>
-								<div class="caption">
-									<h3>Trajectory 4</h3>
-									<p>DDPPO trajectory with ground truth pos. Left images with noises, right without noises.</p>
-									<ul class="actions fixed">
-										<li><span class="button small">Details</span></li>
-									</ul>
-								</div>
-							</article>
-							<article>
-								<a href="images/! 4_.png" class="image">
-									<img src="images/! 4_.png" alt="" />
-								</a>
-								<div class="caption">
-									<h3>Trajectory 5</h3>
-									<p>DDPPO trajectory with ground truth pos. Left images with noises, right without noises.</p>
-									<ul class="actions fixed">
-										<li><span class="button small">Details</span></li>
-									</ul>
-								</div>
-							</article>
-							<article>
-								<a href="images/! 5_.png" class="image">
-									<img src="images/! 5_.png" alt="" />
-								</a>
-								<div class="caption">
-									<h3>Trajectory 6</h3>
-									<p>DDPPO trajectory with ground truth pos. Left images with noises, right without noises.</p>
-									<ul class="actions fixed">
-										<li><span class="button small">Details</span></li>
-									</ul>
-								</div>
-							</article>
-							<article>
-								<a href="images/! 6_.png" class="image">
-									<img src="images/! 6_.png" alt="" />
-								</a>
-								<div class="caption">
-									<h3>Trajectory 7</h3>
-									<p>DDPPO trajectory with ground truth pos. Left images with noises, right without noises.</p>
-									<ul class="actions fixed">
-										<li><span class="button small">Details</span></li>
-									</ul>
-								</div>
-							</article>
-							<article>
-								<a href="images/! 7_.png" class="image">
-									<img src="images/! 7_.png" alt="" />
-								</a>
-								<div class="caption">
-									<h3>Trajectory 8</h3>
-									<p>DDPPO trajectory with ground truth pos. Left images with noises, right without noises.</p>
-									<ul class="actions fixed">
-										<li><span class="button small">Details</span></li>
-									</ul>
-								</div>
-							</article>
-							<article>
-								<a href="images/! 8_.png" class="image">
-									<img src="images/! 8_.png" alt="" />
-								</a>
-								<div class="caption">
-									<h3>Trajectory 9</h3>
-									<p>DDPPO trajectory with ground truth pos. Left images with noises, right without noises.</p>
-									<ul class="actions fixed">
-										<li><span class="button small">Details</span></li>
-									</ul>
-								</div>
-							</article>
-							<article>
-								<a href="images/! 9_.png" class="image">
-									<img src="images/! 9_.png" alt="" />
-								</a>
-								<div class="caption">
-									<h3>Trajectory 10</h3>
-									<p>DDPPO trajectory with ground truth pos. Left images with noises, right without noises.</p>
-									<ul class="actions fixed">
-										<li><span class="button small">Details</span></li>
-									</ul>
-								</div>
-							</article>
+						<div class="container">
+							<img src="images/! 0_.png" alt="" data-position="top center" width="760" height="300" />
 						</div>	
+						
+						<h3>Example of DDPPO agent trajectory with ground truth pos. Left trajectory with action and sensors noise, right without. 
+							The green path is the ideal path with SPL=1; the blue path is a real agent path.</h3>
+							
+							<div class="items style1 medium onscroll-fade-in">
+								<section>
+								
+					
+									<a href="images/0_nonoise_new.png" class="image">
+										<img src="images/0_nonoise_new.png" alt="" />
+									</a>
+								</section>
+								<section>
+									
+					
+									<a href="images/1_nonoise_new.png" class="image">
+										<img src="images/1_nonoise_new.png" alt="" />
+									</a></section>
+								<section>
+									
+				
+									<a href="images/2_nonoise_new.png" class="image">
+										<img src="images/2_nonoise_new.png" alt="" />
+									</a></section>
+								<section>
+							
+				
+									<a href="images/3_nonoise_new.png" class="image">
+										<img src="images/3_nonoise_new.png" alt="" />
+									</a></section>
+								<section>
+				
+									<a href="images/4_nonoise_new.png" class="image">
+										<img src="images/4_nonoise_new.png" alt="" />
+									</a></section>
+								<section>
+		
+									<a href="images/5_nonoise_new.png" class="image">
+										<img src="images/5_nonoise_new.png" alt="" />
+									</a></section>
+								<section>
+							
+									<a href="images/6_nonoise_new.png" class="image">
+										<img src="images/6_nonoise_new.png" alt="" />
+									</a></section>
+								<section>
+								
+									<a href="images/7_nonoise_new.png" class="image">
+										<img src="images/7_nonoise_new.png" alt="" />
+									</a></section>
+								<section>
+							
+									<a href="images/8_nonoise_new.png" class="image">
+										<img src="images/8_nonoise_new.png" alt="" />
+									</a></section>
+					
+							</div>
 
-						<div class="major"><h4><br/><br/>DDPPO results with ground truth pos. Left image with action and sensor noises.
-						Right image without noises. </h4></p>
+	
 
-						<!-- Gallery -->
-						<div class="gallery style2 medium lightbox onscroll-fade-in">
-							<article>
-								<a href="images/0_nonoise_new.png" class="image">
-									<img src="images/0_nonoise_new.png" alt="" />
-								</a>
-								<div class="caption">
-									<h3>Trajectory 1</h3>
-									<p>Blue square is starting point, red square is finish point</p>
-									<ul class="actions fixed">
-										<li><span class="button small">Details</span></li>
-									</ul>
-								</div>
-							</article>
-							<article>
-								<a href="images/1_nonoise_new.png" class="image">
-									<img src="images/1_nonoise_new.png" alt="" />
-								</a>
-								<div class="caption">
-									<h3>Trajectory 2</h3>
-									<p>Blue square is starting point, red square is finish point</p>
-									<ul class="actions fixed">
-										<li><span class="button small">Details</span></li>
-									</ul>
-								</div>
-							</article>
-							<article>
-								<a href="images/2_nonoise_new.png" class="image">
-									<img src="images/2_nonoise_new.png" alt="" />
-								</a>
-								<div class="caption">
-									<h3>Trajectory 3</h3>
-									<p>Blue square is starting point, red square is finish point</p>
-									<ul class="actions fixed">
-										<li><span class="button small">Details</span></li>
-									</ul>
-								</div>
-							</article>
-							<article>
-								<a href="images/3_nonoise_new.png" class="image">
-									<img src="images/3_nonoise_new.png" alt="" />
-								</a>
-								<div class="caption">
-									<h3>Trajectory 4</h3>
-									<p>Blue square is starting point, red square is finish point</p>
-									<ul class="actions fixed">
-										<li><span class="button small">Details</span></li>
-									</ul>
-								</div>
-							</article>
-							<article>
-								<a href="images/4_nonoise_new.png" class="image">
-									<img src="images/4_nonoise_new.png" alt="" />
-								</a>
-								<div class="caption">
-									<h3>Trajectory 5</h3>
-									<p>Blue square is starting point, red square is finish point</p>
-									<ul class="actions fixed">
-										<li><span class="button small">Details</span></li>
-									</ul>
-								</div>
-							</article>
-							<article>
-								<a href="images/5_nonoise_new.png" class="image">
-									<img src="images/5_nonoise_new.png" alt="" />
-								</a>
-								<div class="caption">
-									<h3>Trajectory 6</h3>
-									<p>Blue square is starting point, red square is finish point</p>
-									<ul class="actions fixed">
-										<li><span class="button small">Details</span></li>
-									</ul>
-								</div>
-							</article>
-							<article>
-								<a href="images/6_nonoise_new.png" class="image">
-									<img src="images/6_nonoise_new.png" alt="" />
-								</a>
-								<div class="caption">
-									<h3>Trajectory 7</h3>
-									<p>Blue square is starting point, red square is finish point</p>
-									<ul class="actions fixed">
-										<li><span class="button small">Details</span></li>
-									</ul>
-								</div>
-							</article>
-							<article>
-								<a href="images/7_nonoise_new.png" class="image">
-									<img src="images/7_nonoise_new.png" alt="" />
-								</a>
-								<div class="caption">
-									<h3>Trajectory 8</h3>
-									<p>Blue square is starting point, red square is finish point</p>
-									<ul class="actions fixed">
-										<li><span class="button small">Details</span></li>
-									</ul>
-								</div>
-							</article>
-							<article>
-								<a href="images/8_nonoise_new.png" class="image">
-									<img src="images/8_nonoise_new.png" alt="" />
-								</a>
-								<div class="caption">
-									<h3>Trajectory 9</h3>
-									<p>Blue square is starting point, red square is finish point</p>
-									<ul class="actions fixed">
-										<li><span class="button small">Details</span></li>
-									</ul>
-								</div>
-							</article>
-							<article>
-								<a href="images/9_nonoise_new.png" class="image">
-									<img src="images/9_nonoise_new.png" alt="" />
-								</a>
-								<div class="caption">
-									<h3>Trajectory 10</h3>
-									<p>DDPPO results with DF-VO pos. Black square is the starting 
-										point. Red square is the finish point.</p>
-									<ul class="actions fixed">
-										<li><span class="button small">Details</span></li>
-									</ul>
-								</div>
-							</article>
-						</div>	
+							<h3><h3>The DDPPO agents trajectories with zero pos. 
+								The green path is the ideal path with SPL=1; the blue path is a real agent path.</h3></h3>
+							
+							<div class="items style1 medium onscroll-fade-in">
+								<section>
+				
+									<a href="images/_0_dfvo_ddppo_nonoise.png" class="image">
+										<img src="images/_0_dfvo_ddppo_nonoise.png" alt="" />
+									</a></section>
+								<section>
+					
+									<a href="images/_1_dfvo_ddppo_nonoise.png" class="image">
+										<img src="images/_1_dfvo_ddppo_nonoise.png" alt="" />
+									</a></section>
+								<section>
+								
+									<a href="images/_2_dfvo_ddppo_nonoise.png" class="image">
+										<img src="images/_2_dfvo_ddppo_nonoise.png" alt="" />
+									</a></section>
+								<section>
+							
+									<a href="images/_3_dfvo_ddppo_nonoise.png" class="image">
+										<img src="images/_3_dfvo_ddppo_nonoise.png" alt="" />
+									</a></section>
+								<section>
+								
+									<a href="images/_4_dfvo_ddppo_nonoise.png" class="image">
+										<img src="images/_4_dfvo_ddppo_nonoise.png" alt="" />
+									</a></section>
+								<section>
+							
+									<a href="images/_5_dfvo_ddppo_nonoise.png" class="image">
+										<img src="images/_5_dfvo_ddppo_nonoise.png" alt="" />
+									</a></section>
+								<section>
+									
+									<a href="images/_6_dfvo_ddppo_nonoise.png" class="image">
+										<img src="images/_6_dfvo_ddppo_nonoise.png" alt="" />
+									</a></section>
+								<section>
+								
+									<a href="images/_7_dfvo_ddppo_nonoise.png" class="image">
+										<img src="images/_7_dfvo_ddppo_nonoise.png" alt="" />
+									</a></section>
+								<section>
+								
+									<a href="images/_8_dfvo_ddppo_nonoise.png" class="image">
+										<img src="images/_8_dfvo_ddppo_nonoise.png" alt="" />
+									</a></section>
+					
+							</div>
 
-						<div class="major"><h4><br/><br/>DDPPO results with DF-VO pos. Black square is the starting 
-						point. Red square is the finish point. The green line is trajectory with SPL equal 1.</h4></p>
+							<h3>DDPPO results with DF-VO pos. The blue line is the ground truth trajectory. 
+								The red line is the DF-VO trajectory that passed to the DDPPO.</h3>
+							
+							<div class="items style1 medium onscroll-fade-in">
+								<section>
+								
+									<a href="images/ddppo_rtabmap_0.png" class="image">
+										<img src="images/ddppo_rtabmap_0.png" alt="" />
+									</a></section>
+								<section>
+									
+									<a href="images/ddppo_rtabmap_1.png" class="image">
+										<img src="images/ddppo_rtabmap_1.png" alt="" />
+									</a></section>
+								<section>
+									
+									<a href="images/ddppo_rtabmap_2.png" class="image">
+										<img src="images/ddppo_rtabmap_2.png" alt="" />
+									</a></section>
+								<section>
+							
+									<a href="images/ddppo_rtabmap_3.png" class="image">
+										<img src="images/ddppo_rtabmap_3.png" alt="" />
+									</a></section>
+								<section>
+								
+									<a href="images/ddppo_rtabmap_4.png" class="image">
+										<img src="images/ddppo_rtabmap_4.png" alt="" />
+									</a></section>
+								<section>
+								
+									<a href="images/ddppo_rtabmap_5.png" class="image">
+										<img src="images/ddppo_rtabmap_5.png" alt="" />
+									</a></section>
+								<section>
+									
+									<a href="images/ddppo_rtabmap_6.png" class="image">
+										<img src="images/ddppo_rtabmap_6.png" alt="" />
+									</a></section>
+								<section>
+								
+									<a href="images/ddppo_rtabmap_7.png" class="image">
+										<img src="images/ddppo_rtabmap_7.png" alt="" />
+									</a></section>
+								<section>
+								
+									<a href="images/ddppo_rtabmap_8.png" class="image">
+										<img src="images/ddppo_rtabmap_8.png" alt="" />
+									</a></section>
+					
+							</div>
 
-						<!-- Gallery -->
-						<div class="gallery style2 medium lightbox onscroll-fade-in">
-							<article>
-								<a href="images/_0_dfvo_ddppo_nonoise.png" class="image">
-									<img src="images/_0_dfvo_ddppo_nonoise.png" alt="" />
-								</a>
-								<div class="caption">
-									<h3>Trajectory 1</h3>
-									<p>Blue line is ground truth pos, red line is DF-VO pos</p>
-									<ul class="actions fixed">
-										<li><span class="button small">Details</span></li>
-									</ul>
-								</div>
-							</article>
-							<article>
-								<a href="images/_1_dfvo_ddppo_nonoise.png" class="image">
-									<img src="images/_1_dfvo_ddppo_nonoise.png" alt="" />
-								</a>
-								<div class="caption">
-									<h3>Trajectory 2</h3>
-									<p>Blue line is ground truth pos, red line is DF-VO pos</p>
-									<ul class="actions fixed">
-										<li><span class="button small">Details</span></li>
-									</ul>
-								</div>
-							</article>
-							<article>
-								<a href="images/_2_dfvo_ddppo_nonoise.png" class="image">
-									<img src="images/_2_dfvo_ddppo_nonoise.png" alt="" />
-								</a>
-								<div class="caption">
-									<h3>Trajectory 3</h3>
-									<p>Blue line is ground truth pos, red line is DF-VO pos</p>
-									<ul class="actions fixed">
-										<li><span class="button small">Details</span></li>
-									</ul>
-								</div>
-							</article>
-							<article>
-								<a href="images/_3_dfvo_ddppo_nonoise.png" class="image">
-									<img src="images/_3_dfvo_ddppo_nonoise.png" alt="" />
-								</a>
-								<div class="caption">
-									<h3>Trajectory 4</h3>
-									<p>Blue line is ground truth pos, red line is DF-VO pos</p>
-									<ul class="actions fixed">
-										<li><span class="button small">Details</span></li>
-									</ul>
-								</div>
-							</article>
-							<article>
-								<a href="images/_4_dfvo_ddppo_nonoise.png" class="image">
-									<img src="images/_4_dfvo_ddppo_nonoise.png" alt="" />
-								</a>
-								<div class="caption">
-									<h3>Trajectory 5</h3>
-									<p>Blue line is ground truth pos, red line is DF-VO pos</p>
-									<ul class="actions fixed">
-										<li><span class="button small">Details</span></li>
-									</ul>
-								</div>
-							</article>
-							<article>
-								<a href="images/_5_dfvo_ddppo_nonoise.png" class="image">
-									<img src="images/_5_dfvo_ddppo_nonoise.png" alt="" />
-								</a>
-								<div class="caption">
-									<h3>Trajectory 6</h3>
-									<p>Blue line is ground truth pos, red line is DF-VO pos</p>
-									<ul class="actions fixed">
-										<li><span class="button small">Details</span></li>
-									</ul>
-								</div>
-							</article>
-							<article>
-								<a href="images/_6_dfvo_ddppo_nonoise.png" class="image">
-									<img src="images/_6_dfvo_ddppo_nonoise.png" alt="" />
-								</a>
-								<div class="caption">
-									<h3>Trajectory 7</h3>
-									<p>Blue line is ground truth pos, red line is DF-VO pos</p>
-									<ul class="actions fixed">
-										<li><span class="button small">Details</span></li>
-									</ul>
-								</div>
-							</article>
-							<article>
-								<a href="images/_7_dfvo_ddppo_nonoise.png" class="image">
-									<img src="images/_7_dfvo_ddppo_nonoise.png" alt="" />
-								</a>
-								<div class="caption">
-									<h3>Trajectory 8</h3>
-									<p>Blue line is ground truth pos, red line is DF-VO pos</p>
-									<ul class="actions fixed">
-										<li><span class="button small">Details</span></li>
-									</ul>
-								</div>
-							</article>
-							<article>
-								<a href="images/_8_dfvo_ddppo_nonoise.png" class="image">
-									<img src="images/_8_dfvo_ddppo_nonoise.png" alt="" />
-								</a>
-								<div class="caption">
-									<h3>Trajectory 9</h3>
-									<p>Blue line is ground truth pos, red line is DF-VO pos</p>
-									<ul class="actions fixed">
-										<li><span class="button small">Details</span></li>
-									</ul>
-								</div>
-							</article>
-							<article>
-								<a href="images/_9_dfvo_ddppo_nonoise.png" class="image">
-									<img src="images/_9_dfvo_ddppo_nonoise.png" alt="" />
-								</a>
-								<div class="caption">
-									<h3>Trajectory 10</h3>
-									<p>Blue line is ground truth pos, red line is DF-VO pos</p>
-									<ul class="actions fixed">
-										<li><span class="button small">Details</span></li>
-									</ul>
-								</div>
-							</article>
-						</div>	
-
-						<div class="major"><h4><br/><br/>DDPPO results with DF-VO pos. The blue line is the ground 
-							truth trajectory. The red line is the DF-VO trajectory that passed to the DDPPO.</h4></p>
-
-						<!-- Gallery -->
-						<div class="gallery style2 medium lightbox onscroll-fade-in">
-							<article>
-								<a href="images/ddppo_rtabmap_0.png" class="image">
-									<img src="images/ddppo_rtabmap_0.png" alt="" />
-								</a>
-								<div class="caption">
-									<h3>Trajectory 1</h3>
-									<p>Red line is ground truth pos, green line is RTAB-MAP pos</p>
-									<ul class="actions fixed">
-										<li><span class="button small">Details</span></li>
-									</ul>
-								</div>
-							</article>
-							<article>
-								<a href="images/ddppo_rtabmap_1.png" class="image">
-									<img src="images/ddppo_rtabmap_1.png" alt="" />
-								</a>
-								<div class="caption">
-									<h3>Trajectory 2</h3>
-									<p>Red line is ground truth pos, green line is RTAB-MAP pos</p>
-									<ul class="actions fixed">
-										<li><span class="button small">Details</span></li>
-									</ul>
-								</div>
-							</article>
-							<article>
-								<a href="images/ddppo_rtabmap_2.png" class="image">
-									<img src="images/ddppo_rtabmap_2.png" alt="" />
-								</a>
-								<div class="caption">
-									<h3>Trajectory 3</h3>
-									<p>Red line is ground truth pos, green line is RTAB-MAP pos</p>
-									<ul class="actions fixed">
-										<li><span class="button small">Details</span></li>
-									</ul>
-								</div>
-							</article>
-							<article>
-								<a href="images/ddppo_rtabmap_3.png" class="image">
-									<img src="images/ddppo_rtabmap_3.png" alt="" />
-								</a>
-								<div class="caption">
-									<h3>Trajectory 4</h3>
-									<p>Red line is ground truth pos, green line is RTAB-MAP pos</p>
-									<ul class="actions fixed">
-										<li><span class="button small">Details</span></li>
-									</ul>
-								</div>
-							</article>
-							<article>
-								<a href="images/ddppo_rtabmap_4.png" class="image">
-									<img src="images/ddppo_rtabmap_4.png" alt="" />
-								</a>
-								<div class="caption">
-									<h3>Trajectory 5</h3>
-									<p>Red line is ground truth pos, green line is RTAB-MAP pos</p>
-									<ul class="actions fixed">
-										<li><span class="button small">Details</span></li>
-									</ul>
-								</div>
-							</article>
-							<article>
-								<a href="images/ddppo_rtabmap_5.png" class="image">
-									<img src="images/ddppo_rtabmap_5.png" alt="" />
-								</a>
-								<div class="caption">
-									<h3>Trajectory 6</h3>
-									<p>Red line is ground truth pos, green line is RTAB-MAP pos</p>
-									<ul class="actions fixed">
-										<li><span class="button small">Details</span></li>
-									</ul>
-								</div>
-							</article>
-							<article>
-								<a href="images/ddppo_rtabmap_6.png" class="image">
-									<img src="images/ddppo_rtabmap_6.png" alt="" />
-								</a>
-								<div class="caption">
-									<h3>Trajectory 7</h3>
-									<p>Red line is ground truth pos, green line is RTAB-MAP pos</p>
-									<ul class="actions fixed">
-										<li><span class="button small">Details</span></li>
-									</ul>
-								</div>
-							</article>
-							<article>
-								<a href="images/ddppo_rtabmap_7.png" class="image">
-									<img src="images/ddppo_rtabmap_7.png" alt="" />
-								</a>
-								<div class="caption">
-									<h3>Trajectory 8</h3>
-									<p>Red line is ground truth pos, green line is RTAB-MAP pos</p>
-									<ul class="actions fixed">
-										<li><span class="button small">Details</span></li>
-									</ul>
-								</div>
-							</article>
-							<article>
-								<a href="images/ddppo_rtabmap_8.png" class="image">
-									<img src="images/ddppo_rtabmap_8.png" alt="" />
-								</a>
-								<div class="caption">
-									<h3>Trajectory 9</h3>
-									<p>Red line is ground truth pos, green line is RTAB-MAP pos</p>
-									<ul class="actions fixed">
-										<li><span class="button small">Details</span></li>
-									</ul>
-								</div>
-							</article>
-							<article>
-								<a href="images/ddppo_rtabmap_9.png" class="image">
-									<img src="images/ddppo_rtabmap_9.png" alt="" />
-								</a>
-								<div class="caption">
-									<h3>Trajectory 10</h3>
-									<p>Red line is ground truth pos, green line is RTAB-MAP pos</p>
-									<ul class="actions fixed">
-										<li><span class="button small">Details</span></li>
-									</ul>
-								</div>
-							</article>
-						</div>	
-
-						<div class="major"><h4><br/><br/>DDPPO results with RTAB-MAP pos. The red line is the ground 
-							truth trajectory. The green line is the RTAB-MAP trajectory that passed to the DDPPO.</h4></p>
-
-						<br/>
-						<br/>
-						<br/>
+							<h3>DDPPO results with RTAB-MAP pos. The red line is the ground truth trajectory. 
+								The green line is the RTAB-MAP trajectory that passed to the DDPPO.</h3>
 														
 
 						<div class="index align-left">
@@ -738,7 +390,7 @@
 					<footer class="wrapper style1 align-center">
 						<div class="inner">
 							
-							<p>&copy; ForgER. Design: <a href="http://rairi.ru/structure/71-ids.html">Intelligent dynamical systems and cognitive research center</a>.</p>
+							<p>&copy; Learning embodied agents to navigate. Design: <a href="http://rairi.ru/structure/71-ids.html">Intelligent dynamical systems and cognitive research center</a>.</p>
 						</div>
 					</footer>
 
