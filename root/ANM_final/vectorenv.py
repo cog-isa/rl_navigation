@@ -14,7 +14,8 @@ from habitat.core.env import Env, Observations, RLEnv
 from habitat.core.logging import logger
 from habitat.core.utils import tile_images
 from habitat.datasets.pointnav.pointnav_dataset import PointNavDatasetV1
-from pointnav_env import Pointnav_Env
+# from pointnav_env import Pointnav_Env
+from exploration_env import Exploration_Env
 import torch
 from arguments import init_config, multiple_config
 
@@ -38,7 +39,7 @@ def make_env_fn(argss, config_env, rank):
     print("Loading {}".format(config_env.SIMULATOR.SCENE))
     config_env.freeze()
 
-    env = Pointnav_Env(argss=argss, rank=rank,
+    env = Exploration_Env(argss=argss, rank=rank,
                           config_env=config_env, dataset=dataset)
 
     env.seed(rank)

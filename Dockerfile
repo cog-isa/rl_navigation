@@ -239,6 +239,7 @@ RUN pip install ipywidgets
 
 # vnc port
 EXPOSE 5900
+EXPOSE 22
 # jupyterlab port
 EXPOSE 8888
 # tensorboard (if any)
@@ -257,3 +258,15 @@ WORKDIR /
 # services like lxde, xvfb, x11vnc, jupyterlab will be started
 
 ENTRYPOINT ["/startup.sh"]
+RUN pip install moviepy plotly wandb
+RUN wandb login 63fafac0d48ac1616ca44d37e985cbb7b1f29cbf
+
+# Fix for AGENT_SPRITE
+COPY requirements/maps.py /habitat-api/habitat/utils/visualizations/maps.py
+
+# Set root password
+RUN echo 'root:a' | chpasswd
+
+RUN apt-get install -y openssh-server
+RUN service ssh restart
+

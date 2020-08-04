@@ -1,0 +1,11 @@
+docker run --runtime=nvidia -d --rm --name lmurashov_habitat \
+--env="DISPLAY=$DISPLAY" \
+--env="QT_X11_NO_MITSHM=1" \
+--volume="/tmp/.X11-unix:/tmp/.X11-unix:rw" \
+-env="XAUTHORITY=$XAUTH" \
+--volume="$XAUTH:$XAUTH" \
+--privileged \
+--memory=128g --cpus=20 \
+-p $1:5900 -p $2:8888 -p $3:22 -e jup_port=$2 -e vnc_port=$1 \
+-v /home/lmurashov/data/:/data \
+-v /home/lmurashov/rl_navigation/root/:/root habitat_lmurashov

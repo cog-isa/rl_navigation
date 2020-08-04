@@ -1,2 +1,11 @@
-run.sh
-build.sh
+**/__pycache__/
+*.pyc
+*.tar.gz
+*.slam
+*.local
+*.h5
+**/wandb/
+**/.ipynb_checkpoints/
+**/.thumbnails/
+**/.config/
+**/.dbus/
