@@ -3,7 +3,7 @@ import math
 import torch
 
 
-def get_args():
+def get_args(get_default=False):
     parser = argparse.ArgumentParser(description='Active-Neural-SLAM')
 
     ## General Arguments
@@ -164,7 +164,10 @@ def get_args():
     parser.add_argument('-nl', '--noise_level', type=float, default=1.0)
 
     # parse arguments
-    args = parser.parse_args()
+    if get_default:
+        args = parser.parse_args('')
+    else:
+        args = parser.parse_args()
     args.cuda = not args.no_cuda and torch.cuda.is_available()
 
     if args.cuda:
