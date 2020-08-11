@@ -18,7 +18,7 @@
 from argparse import Namespace
 
 import numpy as np
-
+from numba import njit, jit
 import env.utils.rotation_utils as ru
 
 
@@ -48,9 +48,9 @@ def get_point_cloud_from_z(Y, camera_matrix, scale=1):
     for i in range(Y.ndim - 2):
         x = np.expand_dims(x, axis=0)
         z = np.expand_dims(z, axis=0)
-    X = (x[::scale, ::scale] - camera_matrix.xc) * Y[::scale, ::scale] / camera_matrix.f
-    Z = (z[::scale, ::scale] - camera_matrix.zc) * Y[::scale, ::scale] / camera_matrix.f
-    XYZ = np.concatenate((X[..., np.newaxis], Y[::scale, ::scale][..., np.newaxis],
+    X = (x[..., ::scale, ::scale] - camera_matrix.xc) * Y[..., ::scale, ::scale] / camera_matrix.f
+    Z = (z[..., ::scale, ::scale] - camera_matrix.zc) * Y[..., ::scale, ::scale] / camera_matrix.f
+    XYZ = np.concatenate((X[..., np.newaxis], Y[..., ::scale, ::scale][..., np.newaxis],
                           Z[..., np.newaxis]), axis=X.ndim)
     return XYZ
 
@@ -94,8 +94,9 @@ def bin_points(XYZ_cms, map_size, z_bins, xy_resolution):
     XYZ_cms is ... x H x W x3
     Outputs is ... x map_size x map_size x (len(z_bins)+1)
     """
+    XYZ_cms = XYZ_cms.copy()
     sh = XYZ_cms.shape
-    XYZ_cms = XYZ_cms.reshape([-1, sh[-3], sh[-2], sh[-1]])
+    XYZ_cms = XYZ_cms.reshape((-1, sh[-3], sh[-2], sh[-1]))
     n_z_bins = len(z_bins) + 1
     counts = []
     isvalids = []
@@ -117,5 +118,34 @@ def bin_points(XYZ_cms, map_size, z_bins, xy_resolution):
 
     counts = np.array(counts)
     counts = counts.reshape(list(sh[:-3]) + [map_size, map_size, n_z_bins])
-
     return counts
+
+def project_points(XYZ_cms, map_size, xy_resolution):
+    """Bins points into xy bins
+    XYZ_cms is ... x H x W x3
+    Outputs is ... x map_size x map_size
+    """
+    XYZ_cms = XYZ_cms.copy()
+    sh = XYZ_cms.shape
+    XYZ_cms = XYZ_cms.reshape((-1, sh[-3], sh[-2], sh[-1]))
+    counts = []
+    isvalids = []
+    for XYZ_cm in XYZ_cms:
+        isnotnan = np.logical_not(np.isnan(XYZ_cm[:, :, 0]))
+        X_bin = np.round(XYZ_cm[:, :, 0] / xy_resolution).astype(np.int32)
+        Y_bin = np.round(XYZ_cm[:, :, 1] / xy_resolution).astype(np.int32)
+
+        isvalid = np.array([X_bin >= 0, X_bin < map_size, Y_bin >= 0, Y_bin < map_size, isnotnan])
+        isvalid = np.all(isvalid, axis=0)
+
+        ind = Y_bin * map_size + X_bin
+        ind[np.logical_not(isvalid)] = 0
+        count = np.bincount(ind.ravel(), isvalid.ravel().astype(np.int32),
+                            minlength=map_size * map_size)
+        counts.append(np.reshape(count, [map_size, map_size]))
+
+    counts = np.array(counts)
+    counts = counts.reshape(list(sh[:-3]) + [map_size, map_size])
+    return counts
+
+#     return np.zeros(list(sh[:-3]) + [map_size, map_size, n_z_bins])

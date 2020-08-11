@@ -56,7 +56,7 @@ WORKDIR /
 
 RUN pip install jupyterlab
 RUN pip install torch==1.5.0+cu101 torchvision==0.6.0+cu101 -f https://download.pytorch.org/whl/torch_stable.html
-RUN pip install tensorflow-gpu==1.14
+RUN pip install tensorflow-gpu==2.3
 RUN pip install matplotlib
 RUN pip install tqdm
 RUN pip install tabulate
@@ -268,5 +268,8 @@ COPY requirements/maps.py /habitat-api/habitat/utils/visualizations/maps.py
 RUN echo 'root:a' | chpasswd
 
 RUN apt-get install -y openssh-server
-RUN service ssh restart
+
+#RUN mkdir /var/run/sshd
+
+#RUN service ssh restart
 

@@ -4,7 +4,7 @@ from collections import deque
 import os
 
 os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"
-os.environ["CUDA_VISIBLE_DEVICES"]="3"
+os.environ["CUDA_VISIBLE_DEVICES"]="0,3"
 
 os.environ["OMP_NUM_THREADS"] = "1"
 import numpy as np

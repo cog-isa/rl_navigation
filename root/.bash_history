@@ -18,3 +18,10 @@ ffmpeg -r 1/5 -i 0-1-Vis-%03d.png -c:v libx264 -vf fps=25 -pix_fmt yuv420p out.m
 -f image2 -pattern_type glob -i '*.png' out.mp4
 ffmpeg -f image2 -pattern_type glob -i '*.png' out.mp4
 vlc out.mp4 
+htop
+cd Neural-SLAM/
+ls
+vlc
+chromium-browser video-3-1.mp4 
+chromium-browser video-3-1.mp4 --no-sendbox
+chromium-browser video-3-1.mp4 --no-sandbox

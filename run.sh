@@ -5,7 +5,8 @@ docker run --runtime=nvidia -d --rm --name lmurashov_habitat \
 -env="XAUTHORITY=$XAUTH" \
 --volume="$XAUTH:$XAUTH" \
 --privileged \
---memory=128g --cpus=20 \
+--memory=256g --cpus=20 \
 -p $1:5900 -p $2:8888 -p $3:22 -e jup_port=$2 -e vnc_port=$1 \
 -v /home/lmurashov/data/:/data \
+-v /mnt/data/users/lmurashov/tmp/:/root/Neural-SLAM/tmp \
 -v /home/lmurashov/rl_navigation/root/:/root habitat_lmurashov

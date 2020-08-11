@@ -4,8 +4,10 @@
 *.slam
 *.local
 *.h5
+*.deb
 **/wandb/
 **/.ipynb_checkpoints/
 **/.thumbnails/
 **/.config/
+**/.cache/
 **/.dbus/

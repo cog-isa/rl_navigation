@@ -22,7 +22,7 @@ import matplotlib.pyplot as plt
 import habitat
 from habitat import logger
 
-from env.utils.map_builder import MapBuilder
+from env.utils.map_builder_objnav import MapBuilder
 from env.utils.fmm_planner import FMMPlanner
 
 from env.habitat.utils.noisy_actions import CustomActionSpaceConfiguration

@@ -334,8 +334,8 @@ class Exploration_Env(habitat.RLEnv):
 
     def get_explored_ratio(self):
         curr_explored = self.explored_map * self.explorable_map
-        print('hehe', np.sum(curr_explored))
-        print(np.sum(self.explorable_map))
+#        print('hehe', np.sum(curr_explored))
+#        print(np.sum(self.explorable_map))
         return np.sum(curr_explored) / np.sum(self.explorable_map)
     
     def get_done(self, observations):
