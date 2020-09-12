@@ -4,6 +4,7 @@ import numpy as np
 import torch
 from habitat.config.default import get_config as cfg_env
 from habitat.datasets.pointnav.pointnav_dataset import PointNavDatasetV1
+import habitat
 
 from .exploration_env import Exploration_Env
 # from habitat.core.vector_env import VectorEnv
@@ -87,6 +88,53 @@ def construct_envs(args):
         config_env.SIMULATOR.TURN_ANGLE = 10
         config_env.DATASET.SPLIT = args.split
 
+        
+        if args.exp_name == 'default-config':
+            pass
+        elif args.exp_name == 'zero-noise':
+            config_env.SIMULATOR.RGB_SENSOR.NOISE_MODEL = 'GaussianNoiseModel'
+            config_env.SIMULATOR.RGB_SENSOR.NOISE_MODEL_KWARGS = habitat.config.default.Config()
+            config_env.SIMULATOR.RGB_SENSOR.NOISE_MODEL_KWARGS.intensity_constant = 0
+            config_env.SIMULATOR.DEPTH_SENSOR.NOISE_MODEL: "RedwoodDepthNoiseModel"
+            config_env.SIMULATOR.ACTION_SPACE_CONFIG = 'pyrobotnoisy'
+            config_env.SIMULATOR.NOISE_MODEL = habitat.config.default.Config()
+            config_env.SIMULATOR.NOISE_MODEL.ROBOT = "LoCoBot"
+            config_env.SIMULATOR.NOISE_MODEL.CONTROLLER = 'Proportional'   
+            config_env.SIMULATOR.NOISE_MODEL.NOISE_MULTIPLIER = 0
+        elif args.exp_name == 'little-noise':
+            config_env.SIMULATOR.RGB_SENSOR.NOISE_MODEL = 'GaussianNoiseModel'
+            config_env.SIMULATOR.RGB_SENSOR.NOISE_MODEL_KWARGS = habitat.config.default.Config()
+            config_env.SIMULATOR.RGB_SENSOR.NOISE_MODEL_KWARGS.intensity_constant = 0.05
+            config_env.SIMULATOR.DEPTH_SENSOR.NOISE_MODEL: "RedwoodDepthNoiseModel"
+            config_env.SIMULATOR.ACTION_SPACE_CONFIG = 'pyrobotnoisy'
+            config_env.SIMULATOR.NOISE_MODEL = habitat.config.default.Config()
+            config_env.SIMULATOR.NOISE_MODEL.ROBOT = "LoCoBot"
+            config_env.SIMULATOR.NOISE_MODEL.CONTROLLER = 'Proportional'   
+            config_env.SIMULATOR.NOISE_MODEL.NOISE_MULTIPLIER = 0.2
+        elif args.exp_name in ['more-noise', 'noise-anm-vanila', 'test']:
+            config_env.SIMULATOR.RGB_SENSOR.NOISE_MODEL = 'GaussianNoiseModel'
+            config_env.SIMULATOR.RGB_SENSOR.NOISE_MODEL_KWARGS = habitat.config.default.Config()
+            config_env.SIMULATOR.RGB_SENSOR.NOISE_MODEL_KWARGS.intensity_constant = 0.1
+            config_env.SIMULATOR.DEPTH_SENSOR.NOISE_MODEL: "RedwoodDepthNoiseModel"
+            config_env.SIMULATOR.ACTION_SPACE_CONFIG = 'pyrobotnoisy'
+            config_env.SIMULATOR.NOISE_MODEL = habitat.config.default.Config()
+            config_env.SIMULATOR.NOISE_MODEL.ROBOT = "LoCoBot"
+            config_env.SIMULATOR.NOISE_MODEL.CONTROLLER = 'Proportional'   
+            config_env.SIMULATOR.NOISE_MODEL.NOISE_MULTIPLIER = 0.5
+        elif args.exp_name == 'most-noise':
+            config_env.SIMULATOR.RGB_SENSOR.NOISE_MODEL = 'GaussianNoiseModel'
+            config_env.SIMULATOR.RGB_SENSOR.NOISE_MODEL_KWARGS = habitat.config.default.Config()
+            config_env.SIMULATOR.RGB_SENSOR.NOISE_MODEL_KWARGS.intensity_constant = 0.5
+            config_env.SIMULATOR.DEPTH_SENSOR.NOISE_MODEL: "RedwoodDepthNoiseModel"
+            config_env.SIMULATOR.ACTION_SPACE_CONFIG = 'pyrobotnoisy'
+            config_env.SIMULATOR.NOISE_MODEL = habitat.config.default.Config()
+            config_env.SIMULATOR.NOISE_MODEL.ROBOT = "LoCoBot"
+            config_env.SIMULATOR.NOISE_MODEL.CONTROLLER = 'Proportional'   
+            config_env.SIMULATOR.NOISE_MODEL.NOISE_MULTIPLIER = 0.5
+        else:
+            raise Exception('unknown experiment')
+            
+        
         config_env.freeze()
         env_configs.append(config_env)
 

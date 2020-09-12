@@ -1,1 +1,1 @@
-docker build -t habitat_lmurashov .
+docker build -t old_habitat_lmurashov .

@@ -1,1 +1,1 @@
-docker exec -it lmurashov_habitat /bin/bash
+docker exec -it old_lmurashov_habitat /bin/bash

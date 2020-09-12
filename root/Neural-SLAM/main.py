@@ -4,7 +4,7 @@ from collections import deque
 import os
 
 os.environ["CUDA_DEVICE_ORDER"]="PCI_BUS_ID"
-os.environ["CUDA_VISIBLE_DEVICES"]="3"
+# os.environ["CUDA_VISIBLE_DEVICES"]="1,3"
 
 os.environ["OMP_NUM_THREADS"] = "1"
 import numpy as np
@@ -29,14 +29,18 @@ if sys.platform == 'darwin':
     matplotlib.use("tkagg")
 import matplotlib.pyplot as plt
 
-import wandb
-wandb.init(project="neural-slam")
+import gc
 
 # plt.ion()
 # fig, ax = plt.subplots(1,4, figsize=(10, 2.5), facecolor="whitesmoke")
 
 
 args = get_args()
+
+
+import wandb
+wandb.init(project="neural-slam", name=args.exp_name)
+
 
 np.random.seed(args.seed)
 torch.manual_seed(args.seed)
@@ -335,6 +339,7 @@ def main():
     torch.set_grad_enabled(False)
 
     for ep_num in range(num_episodes):
+        gc.collect()
         for step in range(args.max_episode_length):
             total_num_steps += 1
 
@@ -491,15 +496,15 @@ def main():
                 g_process_rewards *= g_masks.cpu().numpy()
                 per_step_g_rewards.append(np.mean(g_reward.cpu().numpy()))
 
-                print(infos[0].keys())
-                print(infos[0]['explored_ratio'])
+                #print(infos[0].keys())
+                #print(infos[0]['explored_ratio'])
                 if np.sum(g_total_rewards) != 0:
                     for tr, ratio in zip(g_total_rewards, 
                                          [info['explored_ratio'] for info in infos]):
                         if tr != 0:
                             g_episode_rewards.append(tr)
                             explored_ratios.append(ratio)
-                            print('MAMA MIA!!!')
+                            #print('MAMA MIA!!!')
 
                 if args.eval:
                     exp_ratio = torch.from_numpy(np.asarray(

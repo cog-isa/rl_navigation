@@ -1,1 +1,1 @@
-docker stop lmurashov_habitat
+docker stop old_lmurashov_habitat
