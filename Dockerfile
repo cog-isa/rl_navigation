@@ -94,9 +94,9 @@ RUN DIR1=$(pwd) && \
     cd ${MAINDIR} && \
     mkdir eigen3 && \
     cd eigen3 && \
-    wget http://bitbucket.org/eigen/eigen/get/3.3.5.tar.gz && \
-    tar -xzf 3.3.5.tar.gz && \
-    cd eigen-eigen-b3f3d4950030 && \
+    wget http://gitlab.com/libeigen/eigen/-/archive/3.3.5/eigen-3.3.5.tar.gz && \
+    tar -xzf eigen-3.3.5.tar.gz && \
+    cd eigen-3.3.5 && \
     mkdir build && \
     cd build && \
     cmake .. -DCMAKE_INSTALL_PREFIX=${MAINDIR}/eigen3_installed/ && \
@@ -119,36 +119,36 @@ RUN DIR1=$(pwd) && \
     cmake --build . && \
     cd ${MAINDIR} && \
     rm ORB_SLAM2 -rf && \
-    rm ORB_SLAM2-PythonBindings -rf && \
-    git clone https://github.com/ducha-aiki/ORB_SLAM2 && \
-    git clone https://github.com/ducha-aiki/ORB_SLAM2-PythonBindings && \
-    cd ${MAINDIR}/ORB_SLAM2 && \
-    sed -i "s,cmake .. -DCMAKE_BUILD_TYPE=Release,cmake .. -DCMAKE_BUILD_TYPE=Release -DEIGEN3_INCLUDE_DIR=${MAINDIR}/eigen3_installed/include/eigen3/ -DCMAKE_INSTALL_PREFIX=${MAINDIR}/ORBSLAM2_installed ,g" build.sh
+    rm ORB_SLAM2-PythonBindings -rf 
+    #git clone https://github.com/ducha-aiki/ORB_SLAM2 && \
+    #git clone https://github.com/ducha-aiki/ORB_SLAM2-PythonBindings && \
+    #cd ${MAINDIR}/ORB_SLAM2 && \
+    #sed -i "s,cmake .. -DCMAKE_BUILD_TYPE=Release,cmake .. -DCMAKE_BUILD_TYPE=Release -DEIGEN3_INCLUDE_DIR=${MAINDIR}/eigen3_installed/include/eigen3/ -DCMAKE_INSTALL_PREFIX=${MAINDIR}/ORBSLAM2_installed ,g" build.sh
 
 RUN /bin/bash -c "source ~/.bashrc"
 
 WORKDIR /root
-RUN DIR1=$(pwd) && \
-    MAINDIR=$(pwd)/3rdparty && \
-    cd ${MAINDIR}/ORB_SLAM2 && \
-    ./build.sh && \
-    cd build && \
-    make install && \
-    cd ${MAINDIR} && \
-    cd ORB_SLAM2-PythonBindings/src && \
-    ln -s ${MAINDIR}/eigen3_installed/include/eigen3/Eigen Eigen && \
-    cd ${MAINDIR}/ORB_SLAM2-PythonBindings && \
-    mkdir build && \
-    cd build && \
-    CONDA_DIR=$(dirname $(dirname $(which conda))) && \
-    sed -i "s,lib/python3.5/dist-packages,/opt/conda/envs/habitat/lib/python3.6/site-packages/,g" ../CMakeLists.txt && \
-    sed -i "s,python-py35,python-py36,g" ../CMakeLists.txt && \
-    cmake .. -DPYTHON_INCLUDE_DIR=$(python -c "from distutils.sysconfig import get_python_inc; print(get_python_inc())") -DPYTHON_LIBRARY=$(python -c "import distutils.sysconfig as sysconfig; print(sysconfig.get_config_var('LIBDIR'))")/libpython3.6m.so -DPYTHON_EXECUTABLE:FILEPATH=`which python` -DCMAKE_LIBRARY_PATH=${MAINDIR}/ORBSLAM2_installed/lib -DCMAKE_INCLUDE_PATH=${MAINDIR}/ORBSLAM2_installed/include && \
-    make && \                                                                                                                                                                                                                                                                               
-    make install
+#RUN DIR1=$(pwd) && \
+#    MAINDIR=$(pwd)/3rdparty && \
+#    cd ${MAINDIR}/ORB_SLAM2 && \
+#    ./build.sh && \
+#    cd build && \
+#    make install && \
+#    cd ${MAINDIR} && \
+#    cd ORB_SLAM2-PythonBindings/src && \
+#    ln -s ${MAINDIR}/eigen3_installed/include/eigen3/Eigen Eigen && \
+#    cd ${MAINDIR}/ORB_SLAM2-PythonBindings && \
+#    mkdir build && \
+#    cd build && \
+#    CONDA_DIR=$(dirname $(dirname $(which conda))) && \
+#    sed -i "s,lib/python3.5/dist-packages,/opt/conda/envs/habitat/lib/python3.6/site-packages/,g" ../CMakeLists.txt && \
+#    sed -i "s,python-py35,python-py36,g" ../CMakeLists.txt && \
+#    cmake .. -DPYTHON_INCLUDE_DIR=$(python -c "from distutils.sysconfig import get_python_inc; print(get_python_inc())") -DPYTHON_LIBRARY=$(python -c "import distutils.sysconfig as sysconfig; print(sysconfig.get_config_var('LIBDIR'))")/libpython3.6m.so -DPYTHON_EXECUTABLE:FILEPATH=`which python` -DCMAKE_LIBRARY_PATH=${MAINDIR}/ORBSLAM2_installed/lib -DCMAKE_INCLUDE_PATH=${MAINDIR}/ORBSLAM2_installed/include && \
+#    make && \                                                                                                                                                                                                                                                                               
+#    make install
 
-RUN cp /root/3rdparty/ORB_SLAM2/Thirdparty/DBoW2/lib/libDBoW2.so /opt/conda/envs/habitat/lib/libDBoW2.so
-RUN cp /root/3rdparty/ORB_SLAM2/Thirdparty/g2o/lib/libg2o.so /opt/conda/envs/habitat/lib/libg2o.so
+#RUN cp /root/3rdparty/ORB_SLAM2/Thirdparty/DBoW2/lib/libDBoW2.so /opt/conda/envs/habitat/lib/libDBoW2.so
+#RUN cp /root/3rdparty/ORB_SLAM2/Thirdparty/g2o/lib/libg2o.so /opt/conda/envs/habitat/lib/libg2o.so
 
 RUN ln -s /usr/local/cuda-10.1/ /usr/local/cuda
 RUN cp /usr/lib/x86_64-linux-gnu/libcublas.so /usr/local/cuda-10.1/lib64/
@@ -239,6 +239,7 @@ RUN pip install ipywidgets
 
 # vnc port
 EXPOSE 5900
+EXPOSE 22
 # jupyterlab port
 EXPOSE 8888
 # tensorboard (if any)
@@ -257,3 +258,15 @@ WORKDIR /
 # services like lxde, xvfb, x11vnc, jupyterlab will be started
 
 ENTRYPOINT ["/startup.sh"]
+RUN pip install moviepy plotly wandb
+RUN wandb login 63fafac0d48ac1616ca44d37e985cbb7b1f29cbf
+
+# Fix for AGENT_SPRITE
+COPY requirements/maps.py /habitat-api/habitat/utils/visualizations/maps.py
+
+# Set root password
+RUN echo 'root:a' | chpasswd
+
+RUN apt-get install -y openssh-server
+RUN service ssh restart
+
